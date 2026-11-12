@@ -16,7 +16,8 @@ const offers = [
   { name: "Apple Store", initials: "●", tone: "apple", price: "999,00 €", shipping: "Kostenloser Versand", delivery: "1–2 Tage", best: false },
 ];
 
-type TrackedProduct = { id: string; url: string; shop: string; addedAt: string };
+type TrackedProduct = { id: string; url: string; shop: string; createdAt: string };
+type PriceObservation = { id: string; amountCents: number; shippingCents: number; source: string; observedAt: string };
 
 export default function Home() {
   const [showAdd, setShowAdd] = useState(false);
@@ -29,6 +30,9 @@ export default function Home() {
   const [targetPrice, setTargetPrice] = useState("899");
   const [targetInput, setTargetInput] = useState("899");
   const [editingTarget, setEditingTarget] = useState(false);
+  const [priceEntryId, setPriceEntryId] = useState<string | null>(null);
+  const [priceInputs, setPriceInputs] = useState({ amount: "", shipping: "0", source: "Manuell beobachtet" });
+  const [latestPrices, setLatestPrices] = useState<Record<string, PriceObservation>>({});
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("preispilot-theme");
@@ -42,54 +46,99 @@ export default function Home() {
   }, [darkMode]);
 
   useEffect(() => {
-    try {
-      const savedProducts = window.localStorage.getItem("preispilot-products");
-      if (savedProducts) setTrackedProducts(JSON.parse(savedProducts) as TrackedProduct[]);
-      const savedTarget = window.localStorage.getItem("preispilot-target-price");
-      if (savedTarget && Number.isFinite(Number(savedTarget)) && Number(savedTarget) > 0) {
-        setTargetPrice(savedTarget);
-        setTargetInput(savedTarget);
+    let active = true;
+    async function loadProducts() {
+      try {
+        const legacyProducts = JSON.parse(window.localStorage.getItem("preispilot-products") ?? "[]") as Array<{ url?: string }>;
+        for (const legacyProduct of legacyProducts) {
+          if (legacyProduct.url) {
+            await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: legacyProduct.url }) });
+          }
+        }
+        const response = await fetch("/api/products");
+        if (!response.ok) throw new Error("Produkte konnten nicht geladen werden.");
+        const result = (await response.json()) as { products: TrackedProduct[] };
+        if (active) {
+          setTrackedProducts(result.products);
+          const histories = await Promise.all(result.products.map(async (product) => {
+            const historyResponse = await fetch(`/api/products/${encodeURIComponent(product.id)}/prices`);
+            if (!historyResponse.ok) return null;
+            const historyResult = (await historyResponse.json()) as { observations: PriceObservation[] };
+            return historyResult.observations[0] ? [product.id, historyResult.observations[0]] as const : null;
+          }));
+          setLatestPrices(Object.fromEntries(histories.filter((entry): entry is readonly [string, PriceObservation] => entry !== null)));
+        }
+        window.localStorage.removeItem("preispilot-products");
+      } catch {
+        if (active) setNotice("Produkte konnten nicht aus der lokalen Datenbank geladen werden. Bitte prüfe, ob die Datenbank eingerichtet ist.");
+      } finally {
+        if (active) setProductsLoaded(true);
       }
-    } catch {
-      window.localStorage.removeItem("preispilot-products");
-    } finally {
-      setProductsLoaded(true);
     }
+    const savedTarget = window.localStorage.getItem("preispilot-target-price");
+    if (savedTarget && Number.isFinite(Number(savedTarget)) && Number(savedTarget) > 0) {
+      setTargetPrice(savedTarget);
+      setTargetInput(savedTarget);
+    }
+    void loadProducts();
+    return () => { active = false; };
   }, []);
-
-  useEffect(() => {
-    if (productsLoaded) window.localStorage.setItem("preispilot-products", JSON.stringify(trackedProducts));
-  }, [productsLoaded, trackedProducts]);
 
   useEffect(() => {
     if (productsLoaded) window.localStorage.setItem("preispilot-target-price", targetPrice);
   }, [productsLoaded, targetPrice]);
 
-  function addProduct(event: React.FormEvent<HTMLFormElement>) {
+  async function addProduct(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!url.trim()) return;
     try {
       const parsedUrl = new URL(url.trim());
       if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error("Ungültiges Protokoll");
-      const duplicate = trackedProducts.some((product) => product.url === parsedUrl.toString());
-      if (duplicate) {
-        setNotice("Diesen Produktlink hast du bereits vorgemerkt.");
-        setShowAdd(false);
-        return;
-      }
-      const host = parsedUrl.hostname.replace(/^www\./, "");
-      const shop = host.split(".").slice(0, -1).join(".") || host;
-      setTrackedProducts((products) => [{ id: crypto.randomUUID(), url: parsedUrl.toString(), shop, addedAt: new Date().toISOString() }, ...products]);
-      setNotice("Produktlink wurde vorgemerkt. Die automatische Preisabfrage folgt mit der Backend-Anbindung.");
+      const response = await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: parsedUrl.toString() }) });
+      const result = (await response.json()) as { product?: TrackedProduct; error?: string };
+      if (!response.ok || !result.product) throw new Error(result.error ?? "Produkt konnte nicht gespeichert werden.");
+      setTrackedProducts((products) => [result.product!, ...products]);
+      setNotice("Produktlink wurde in deiner lokalen Datenbank gespeichert. Eine Preisabfrage folgt später.");
       setUrl("");
       setShowAdd(false);
-    } catch {
-      setNotice("Bitte gib einen gültigen Produktlink mit https:// ein.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Produkt konnte nicht gespeichert werden.");
     }
   }
 
-  function removeProduct(id: string) {
-    setTrackedProducts((products) => products.filter((product) => product.id !== id));
+  async function removeProduct(id: string) {
+    try {
+      const response = await fetch(`/api/products/${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Produkt konnte nicht entfernt werden.");
+      setTrackedProducts((products) => products.filter((product) => product.id !== id));
+      setLatestPrices((prices) => { const next = { ...prices }; delete next[id]; return next; });
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Produkt konnte nicht entfernt werden.");
+    }
+  }
+
+  async function savePriceObservation(event: React.FormEvent<HTMLFormElement>, productId: string) {
+    event.preventDefault();
+    const amount = Number(priceInputs.amount.replace(",", "."));
+    const shipping = Number(priceInputs.shipping.replace(",", "."));
+    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(shipping) || shipping < 0) {
+      setNotice("Bitte gib gültige Preise für Artikel und Versand ein.");
+      return;
+    }
+    try {
+      const response = await fetch(`/api/products/${encodeURIComponent(productId)}/prices`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amountCents: Math.round(amount * 100), shippingCents: Math.round(shipping * 100), source: priceInputs.source }),
+      });
+      const result = (await response.json()) as { observation?: PriceObservation; error?: string };
+      if (!response.ok || !result.observation) throw new Error(result.error ?? "Preis konnte nicht gespeichert werden.");
+      setLatestPrices((prices) => ({ ...prices, [productId]: result.observation! }));
+      setPriceEntryId(null);
+      setPriceInputs({ amount: "", shipping: "0", source: "Manuell beobachtet" });
+      setNotice("Preisbeobachtung wurde gespeichert.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Preis konnte nicht gespeichert werden.");
+    }
   }
 
   function saveTargetPrice(event: React.FormEvent<HTMLFormElement>) {
@@ -121,7 +170,7 @@ export default function Home() {
 
           <div className="section-heading" id="produkte"><div><h2>Deine Preisbeobachtungen</h2><p>Deine Produkte und ihre Entwicklung auf einen Blick.</p></div><button className="text-button">Alle Produkte <ArrowRight size={15} /></button></div>
 
-          {trackedProducts.length > 0 && <section className="tracked-links" aria-label="Vorgemerkte Produktlinks"><div className="tracked-heading"><div><strong>Vorgemerkte Produktlinks</strong><span>Diese Links sind auf diesem Gerät gespeichert.</span></div><span className="local-badge"><Check size={12} /> Lokal</span></div>{trackedProducts.map((product) => <div className="tracked-link" key={product.id}><div className="tracked-icon"><Package size={16} /></div><div className="tracked-info"><strong>{product.shop}</strong><span title={product.url}>{product.url}</span></div><a href={product.url} target="_blank" rel="noreferrer" aria-label={`${product.shop} öffnen`}><ExternalLink size={15} /></a><button onClick={() => removeProduct(product.id)} aria-label={`${product.shop} entfernen`}><X size={15} /></button></div>)}</section>}
+          {trackedProducts.length > 0 && <section className="tracked-links" aria-label="Vorgemerkte Produktlinks"><div className="tracked-heading"><div><strong>Vorgemerkte Produktlinks</strong><span>Auf diesem PreisPilot-Server gespeichert.</span></div><span className="local-badge"><Check size={12} /> SQLite</span></div>{trackedProducts.map((product) => <div className="tracked-product" key={product.id}><div className="tracked-link"><div className="tracked-icon"><Package size={16} /></div><div className="tracked-info"><strong>{product.shop}</strong><span title={product.url}>{product.url}</span>{latestPrices[product.id] && <small>Zuletzt {((latestPrices[product.id].amountCents + latestPrices[product.id].shippingCents) / 100).toLocaleString("de-DE", { style: "currency", currency: "EUR" })} · {latestPrices[product.id].source} · {new Date(latestPrices[product.id].observedAt).toLocaleString("de-DE")}</small>}</div><a href={product.url} target="_blank" rel="noreferrer" aria-label={`${product.shop} öffnen`}><ExternalLink size={15} /></a><button onClick={() => removeProduct(product.id)} aria-label={`${product.shop} entfernen`}><X size={15} /></button><button className="record-price-button" onClick={() => { setPriceEntryId(priceEntryId === product.id ? null : product.id); setNotice(""); }} aria-label={`Preis für ${product.shop} notieren`}>Preis notieren</button></div>{priceEntryId === product.id && <form className="price-entry-form" onSubmit={(event) => savePriceObservation(event, product.id)}><label>Artikelpreis (€)<input required type="number" min="0.01" step="0.01" value={priceInputs.amount} onChange={(event) => setPriceInputs({ ...priceInputs, amount: event.target.value })} /></label><label>Versand (€)<input required type="number" min="0" step="0.01" value={priceInputs.shipping} onChange={(event) => setPriceInputs({ ...priceInputs, shipping: event.target.value })} /></label><label>Quelle<input required maxLength={100} value={priceInputs.source} onChange={(event) => setPriceInputs({ ...priceInputs, source: event.target.value })} /></label><button className="primary-button" type="submit">Preis speichern</button></form>}</div>)}</section>}
 
           <div className="product-layout"><article className="product-card"><div className="product-head"><div className="product-title-wrap"><div className="product-image"><div className="phone"><span /></div></div><div><div className="product-kicker">SMARTPHONE · APPLE</div><h3>iPhone 16 Pro</h3><div className="product-variant">128 GB · Titan Natur</div></div></div><button className="dots-button" aria-label="Weitere Optionen"><MoreHorizontal size={19} /></button></div>
             <div className="price-row"><div><span className="muted-label">Bester Preis gerade</span><div className="big-price">929,00 <small>€</small></div></div><div className="savings-pill"><ArrowDownRight size={14} /> −70,00 €</div></div>
@@ -136,7 +185,7 @@ export default function Home() {
         </div>
       </section>
 
-      {showAdd && <div className="modal-backdrop" onClick={(event) => { if (event.target === event.currentTarget) setShowAdd(false); }}><section className="add-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" onClick={() => setShowAdd(false)} aria-label="Schließen"><X size={19} /></button><div className="modal-icon"><Link2 size={21} /></div><div className="eyebrow">NEUES PRODUKT</div><h2 id="modal-title">Was möchtest du beobachten?</h2><p>Füge einen Produktlink ein. PreisPilot merkt sich das Produkt für deinen Preisvergleich.</p><form onSubmit={addProduct}><label htmlFor="product-url">Produktlink</label><div className="input-wrap"><Link2 size={17} /><input id="product-url" type="url" required placeholder="https://www.amazon.de/dp/…" value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></div><div className="supported-sites"><span>Beliebte Shops</span><b>amazon</b><b>MediaMarkt</b><b>OTTO</b></div><button className="primary-button submit-button" type="submit"><Search size={16} />Produkt vormerken <ArrowRight size={15} /></button></form><div className="modal-foot"><ShieldCheck size={15} /> Deine Links bleiben privat.</div></section></div>}
+      {showAdd && <div className="modal-backdrop" onClick={(event) => { if (event.target === event.currentTarget) setShowAdd(false); }}><section className="add-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" onClick={() => setShowAdd(false)} aria-label="Schließen"><X size={19} /></button><div className="modal-icon"><Link2 size={21} /></div><div className="eyebrow">NEUES PRODUKT</div><h2 id="modal-title">Was möchtest du beobachten?</h2><p>Füge einen Produktlink ein. PreisPilot merkt sich das Produkt für deinen Preisvergleich.</p><form onSubmit={addProduct}><label htmlFor="product-url">Produktlink</label><div className="input-wrap"><Link2 size={17} /><input id="product-url" type="url" required placeholder="https://www.amazon.de/dp/…" value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></div><div className="supported-sites"><span>Beliebte Shops</span><b>amazon</b><b>MediaMarkt</b><b>OTTO</b></div><button className="primary-button submit-button" type="submit"><Search size={16} />Produkt vormerken <ArrowRight size={15} /></button></form><div className="modal-foot"><ShieldCheck size={15} /> Link wird in der lokalen SQLite-Datenbank gespeichert.</div></section></div>}
     </main>
   );
 }

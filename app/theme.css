@@ -109,6 +109,14 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
 .tracked-info span { overflow: hidden; margin-top: 3px; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .tracked-link a, .tracked-link button { display: grid; place-items: center; padding: 5px; border: 0; color: var(--muted); background: transparent; }
 .tracked-link a:hover, .tracked-link button:hover { color: var(--green); }
+.tracked-product { border-top: 1px solid var(--line); }
+.tracked-product .tracked-link { border-top: 0; }
+.tracked-info small { display: block; margin-top: 4px; color: var(--green); font-size: 8px; }
+.tracked-link .record-price-button { display: block; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); font-size: 8px; white-space: nowrap; }
+.price-entry-form { display: flex; align-items: flex-end; gap: 8px; padding: 0 0 10px 36px; }
+.price-entry-form label { flex: 1; min-width: 90px; color: var(--muted); font-size: 8px; }
+.price-entry-form input { display: block; width: 100%; margin-top: 4px; padding: 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--surface); font: 500 10px 'DM Sans', sans-serif; }
+.price-entry-form .primary-button { padding: 8px 10px; font-size: 9px; white-space: nowrap; }
 .demo-dot { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: #d2a54a; }
 .target-edit-form { display: flex; align-items: center; gap: 7px; flex: 1; flex-wrap: wrap; }
 .target-edit-form label { width: 100%; color: var(--muted); font-size: 8px; }
@@ -119,4 +127,6 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
   .sidebar.mobile-open { display: flex; z-index: 30; width: min(82vw, 270px); box-shadow: 14px 0 40px #101b1633; }
   .mobile-nav-backdrop { position: fixed; inset: 0; z-index: 20; width: 100%; height: 100%; border: 0; background: #10181380; }
   .mobile-menu { position: relative; z-index: 21; }
+  .price-entry-form { flex-wrap: wrap; padding-left: 0; }
+  .price-entry-form label { flex: 1 1 28%; }
 }

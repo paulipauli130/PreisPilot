@@ -17,13 +17,17 @@
 - [x] Mobile Navigation bedienbar machen
 - [x] Wunschpreis lokal bearbeiten und speichern
 - [x] Lokale Startanleitung dokumentieren
-- [ ] Backend, API, Datenbank und Hintergrundaufgaben aufsetzen
-- [ ] Datenmodell für Produkte, Varianten, Angebote und Snapshots implementieren
+- [x] API und SQLite-Datenbank für Produktlinks einrichten
+- [x] Datenmodell und Migration für Produkte und Preisbeobachtungen anlegen
+- [x] API-Endpunkte für Preisverlauf-Snapshots ergänzen
+- [x] Preisbeobachtungen manuell je gespeichertem Produkt erfassen und letzten Gesamtpreis anzeigen
+- [ ] Hintergrundaufgaben und Variantenmodell ergänzen
 - [ ] Deployment-Ziel auswählen und einrichten
 
 ## Phase 2 – Erstes nutzbares Produkt
 
 - Produkt manuell oder per Link anlegen
+- Preisverlauf aus gespeicherten Beobachtungen in der Produktansicht darstellen
 - einen legal verfügbaren Quellen-Adapter implementieren
 - Angebote vergleichen und Preisverlauf darstellen
 - Zielpreis und Benachrichtigungsregel speichern

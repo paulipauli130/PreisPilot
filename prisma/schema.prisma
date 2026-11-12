@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String            @id @default(cuid())
+  url         String            @unique
+  shop        String
+  title       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  priceHistory PriceObservation[]
+
+  @@index([createdAt])
+}
+
+model PriceObservation {
+  id            String   @id @default(cuid())
+  productId     String
+  amountCents   Int
+  shippingCents Int      @default(0)
+  currency      String   @default("EUR")
+  source        String
+  observedAt    DateTime @default(now())
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, observedAt])
+}

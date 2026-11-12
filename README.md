@@ -2,7 +2,7 @@
 
 **PreisPilot** ist ein deutschsprachiger, transparenter Preisvergleichs- und Preisverlauf-Tracker für Produkte im deutschen Markt.
 
-> Status: frühes Frontend-Grundgerüst mit interaktivem Dashboard und lokal gespeicherten Produktlinks. Preise und Händlerangebote sind ausdrücklich als Demo gekennzeichnet; Backend und produktive Preisabfragen folgen.
+> Status: frühe Web-App mit interaktivem Dashboard, lokaler Produktverwaltung über API und SQLite. Preise und Händlerangebote sind ausdrücklich als Demo gekennzeichnet; produktive Preisabfragen folgen.
 
 ## Zielbild
 
@@ -24,20 +24,23 @@ docs/          Produkt-, Architektur- und Entscheidungsdokumentation
   adr/         Architekturentscheidungen
 ```
 
-Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen lokal gespeicherten Hell-/Dunkelmodus, einen lokal speicherbaren Wunschpreis, eine Preisverlaufsvisualisierung und lokale Produktlink-Vormerkungen mit Entfernen-Funktion. Beispielpreise und Angebote sind sichtbar als Demo gekennzeichnet. Links und Wunschpreis bleiben derzeit im Browser des verwendeten Geräts; es findet noch keine automatische Preissuche oder Benachrichtigung statt. Durch das mobile Layout ist die App auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen Hell-/Dunkelmodus und einen lokal gespeicherten Wunschpreis. Produktlinks werden über die API in SQLite gespeichert und können entfernt werden. Für jeden gespeicherten Link lassen sich Artikelpreis, Versand, Quelle und Zeitpunkt manuell als Preisbeobachtung erfassen; der letzte erfasste Gesamtpreis wird am Link angezeigt und der Verlauf ist per API abrufbar. Das Diagramm und Händlerangebote enthalten weiterhin klar gekennzeichnete Beispieldaten. Automatische Preisabfragen und Benachrichtigungen gibt es noch nicht. Durch das mobile Layout ist die App auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 
 ## Lokal starten
 
 Voraussetzung: Node.js 20 oder neuer. In PowerShell kann bei gesperrten Skripten `npm.cmd` verwendet werden.
 
-```bash
+```powershell
 npm.cmd install
+Copy-Item .env.example .env
+npm.cmd run db:generate
+npm.cmd run db:migrate
 npm.cmd run dev
 ```
 
-Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Alternativ funktionieren `npm install` und `npm run dev` in Terminals, die npm direkt ausführen dürfen. Für einen Produktionsbuild: `npm.cmd run build`.
+Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Produktlinks werden auf dem lokalen Server gespeichert; das Dashboard zeigt weiter gekennzeichnete Beispieldaten für Preise, Angebote und Verlauf. Für einen Produktionsbuild: `npm.cmd run build`.
 
-Entwicklungsserver und Produktionsbuild verwenden getrennte Ausgabeverzeichnisse, damit ein Build während der Entwicklung keine laufenden Browser-Assets überschreibt.
+Die Datenbankverbindung steht in `.env`; als Vorlage dient [.env.example](.env.example). Prisma speichert die lokale SQLite-Datenbank in `prisma/preispilot.db`. `db:migrate` bereitet die lokale Datei vor und wendet eingecheckte Migrationen an. `db:deploy` wendet Migrationen ohne Entwicklungsmodus an. Entwicklungsserver und Produktionsbuild verwenden getrennte Ausgabeverzeichnisse, damit ein Build während der Entwicklung keine laufenden Browser-Assets überschreibt.
 
 ## Projektstand und Mitarbeit
 
@@ -56,4 +59,4 @@ Insbesondere gilt: Idealo und Geizhals werden als Vergleichsquellen eingeplant, 
 
 ## Nächste Etappe
 
-Die ersten umsetzbaren Arbeitspakete stehen in [docs/ROADMAP.md](docs/ROADMAP.md). Vor dem Programmieren wird der Technologie-Stack gemeinsam festgelegt.
+Die nächsten umsetzbaren Arbeitspakete stehen in [docs/ROADMAP.md](docs/ROADMAP.md).

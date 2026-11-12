@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+prisma/*.db
 
 # Dependencies and build output
 node_modules/
@@ -10,6 +11,7 @@ build/
 .next/
 .next-dev/
 coverage/
+*.tsbuildinfo
 
 # Tooling
 .vscode/

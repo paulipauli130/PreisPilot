@@ -39,6 +39,8 @@ Die genauen Felder und Beziehungen werden vor dem Datenbankschema in einer separ
 
 ## Schnittstellenprinzip
 
+Die erste lokale API stellt Produktlinks unter `/api/products` bereit. Preis-Snapshots werden pro Produkt unter `/api/products/:id/prices` gelesen und angelegt. Preisbeträge werden als ganze Cent-Beträge gespeichert, damit Rundungsfehler vermieden werden.
+
 Quellen werden über eine einheitliche Adapter-Schnittstelle angebunden:
 
 ```text

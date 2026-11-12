@@ -38,6 +38,8 @@ Jeder Adapter übergibt:
 }
 ```
 
+Bis automatische Quellen verfügbar sind, können Nutzer Preise manuell eintragen. Diese Beobachtungen enthalten Artikelpreis, Versandkosten, frei benannte Quelle und Erfassungszeitpunkt. Sie werden nicht als automatisch verifiziert dargestellt.
+
 ## Vor Aktivierung einer Quelle
 
 1. Nutzungsbedingungen, Kosten und Rate Limits dokumentieren.

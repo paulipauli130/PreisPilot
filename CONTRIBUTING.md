@@ -11,6 +11,9 @@ Danke für dein Interesse an PreisPilot. Diese Anleitung beschreibt den aktuelle
 ```powershell
 cd <Projektordner>
 npm.cmd install
+Copy-Item .env.example .env
+npm.cmd run db:generate
+npm.cmd run db:migrate
 npm.cmd run dev
 ```
 
