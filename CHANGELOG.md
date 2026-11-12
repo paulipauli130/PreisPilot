@@ -16,6 +16,8 @@ Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1
 - Deutsche CONTRIBUTING-Anleitung und fortlaufende Roadmap.
 - ESLint-Konfiguration grenzt generierte Build-Dateien aus.
 - Contributor-Anleitung enthält einen Datenschutzcheck für private lokale Pfade.
+- Entwicklungsserver und Produktionsbuild verwenden getrennte Next.js-Ausgabeverzeichnisse.
+- ESLint ignoriert die getrennten Entwicklungs- und Produktions-Buildordner.
 
 ### Noch nicht enthalten
 

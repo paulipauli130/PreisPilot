@@ -37,6 +37,8 @@ npm.cmd run dev
 
 Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Alternativ funktionieren `npm install` und `npm run dev` in Terminals, die npm direkt ausführen dürfen. Für einen Produktionsbuild: `npm.cmd run build`.
 
+Entwicklungsserver und Produktionsbuild verwenden getrennte Ausgabeverzeichnisse, damit ein Build während der Entwicklung keine laufenden Browser-Assets überschreibt.
+
 ## Projektstand und Mitarbeit
 
 - Änderungen und noch offene Aufgaben: [CHANGELOG.md](CHANGELOG.md)
