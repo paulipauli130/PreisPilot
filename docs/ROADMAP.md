@@ -14,6 +14,8 @@
 - [x] Hell-/Dunkelmodus mit lokal gespeicherter Auswahl ergänzen
 - [x] Produktlinks lokal vormerken, wieder anzeigen und entfernen
 - [x] Beispielpreise und Demoangebote klar als solche kennzeichnen
+- [x] Mobile Navigation bedienbar machen
+- [x] Wunschpreis lokal bearbeiten und speichern
 - [x] Lokale Startanleitung dokumentieren
 - [ ] Backend, API, Datenbank und Hintergrundaufgaben aufsetzen
 - [ ] Datenmodell für Produkte, Varianten, Angebote und Snapshots implementieren

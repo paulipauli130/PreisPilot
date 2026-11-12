@@ -23,8 +23,12 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [notice, setNotice] = useState("");
   const [darkMode, setDarkMode] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const [trackedProducts, setTrackedProducts] = useState<TrackedProduct[]>([]);
   const [productsLoaded, setProductsLoaded] = useState(false);
+  const [targetPrice, setTargetPrice] = useState("899");
+  const [targetInput, setTargetInput] = useState("899");
+  const [editingTarget, setEditingTarget] = useState(false);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("preispilot-theme");
@@ -41,6 +45,11 @@ export default function Home() {
     try {
       const savedProducts = window.localStorage.getItem("preispilot-products");
       if (savedProducts) setTrackedProducts(JSON.parse(savedProducts) as TrackedProduct[]);
+      const savedTarget = window.localStorage.getItem("preispilot-target-price");
+      if (savedTarget && Number.isFinite(Number(savedTarget)) && Number(savedTarget) > 0) {
+        setTargetPrice(savedTarget);
+        setTargetInput(savedTarget);
+      }
     } catch {
       window.localStorage.removeItem("preispilot-products");
     } finally {
@@ -51,6 +60,10 @@ export default function Home() {
   useEffect(() => {
     if (productsLoaded) window.localStorage.setItem("preispilot-products", JSON.stringify(trackedProducts));
   }, [productsLoaded, trackedProducts]);
+
+  useEffect(() => {
+    if (productsLoaded) window.localStorage.setItem("preispilot-target-price", targetPrice);
+  }, [productsLoaded, targetPrice]);
 
   function addProduct(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,17 +92,28 @@ export default function Home() {
     setTrackedProducts((products) => products.filter((product) => product.id !== id));
   }
 
+  function saveTargetPrice(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const parsed = Number(targetInput.replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed <= 0) return;
+    setTargetPrice(parsed.toString());
+    setTargetInput(parsed.toString());
+    setEditingTarget(false);
+    setNotice("Wunschpreis wurde auf diesem Gerät gespeichert. Benachrichtigungen folgen mit der Backend-Anbindung.");
+  }
+
   return (
     <main className="app-shell">
-      <aside className="sidebar">
+      {showMobileNav && <button className="mobile-nav-backdrop" onClick={() => setShowMobileNav(false)} aria-label="Menü schließen" />}
+      <aside className={`sidebar ${showMobileNav ? "mobile-open" : ""}`}>
         <a className="brand" href="#"><span className="brand-mark"><TrendingDown size={20} strokeWidth={2.5} /></span><span>preis<span className="brand-light">pilot</span></span></a>
         <div className="workspace-label">DEIN ÜBERBLICK</div>
-        <nav className="side-nav"><a className="nav-item active" href="#"><LayoutDashboard size={18} />Übersicht</a><a className="nav-item" href="#produkte"><Package size={18} />Meine Produkte<span className="nav-count">{trackedProducts.length + 4}</span></a><a className="nav-item" href="#"><Bell size={18} />Preisalarm</a></nav>
+        <nav className="side-nav"><a className="nav-item active" href="#" onClick={() => setShowMobileNav(false)}><LayoutDashboard size={18} />Übersicht</a><a className="nav-item" href="#produkte" onClick={() => setShowMobileNav(false)}><Package size={18} />Meine Produkte<span className="nav-count">{trackedProducts.length + 4}</span></a><a className="nav-item" href="#preisalarm" onClick={() => setShowMobileNav(false)}><Bell size={18} />Preisalarm</a></nav>
         <div className="side-bottom"><div className="source-note"><span className="source-icon"><ShieldCheck size={17} /></span><div><strong>Preise transparent<br />vergleichen.</strong><p>Quellen und Zeitstempel<br />folgen mit Live-Daten.</p></div></div><button className="nav-item settings" onClick={() => setDarkMode((current) => !current)} aria-label={darkMode ? "Zum hellen Modus wechseln" : "Zum dunklen Modus wechseln"}>{darkMode ? <Sun size={18} /> : <Moon size={18} />}{darkMode ? "Helles Design" : "Dunkles Design"}<span className={`theme-switch ${darkMode ? "on" : ""}`}><i /></span></button><div className="profile"><div className="avatar">P</div><div><strong>Paul</strong><span>Mein PreisPilot</span></div><MoreHorizontal size={19} className="profile-more" /></div></div>
       </aside>
 
       <section className="main-area">
-        <header className="topbar"><button className="mobile-menu" aria-label="Menü"><Menu size={20} /></button><div className="breadcrumb">Mein Bereich <span>/</span> <strong>Übersicht</strong></div><div className="top-actions"><span className="demo-dot" />Demo-Daten <button className="icon-button theme-top" onClick={() => setDarkMode((current) => !current)} aria-label={darkMode ? "Helles Design aktivieren" : "Dunkles Design aktivieren"}>{darkMode ? <Sun size={17} /> : <Moon size={17} />}</button><button className="icon-button" aria-label="Benachrichtigungen"><Bell size={18} /><i /></button></div></header>
+        <header className="topbar"><button className="mobile-menu" onClick={() => setShowMobileNav((open) => !open)} aria-label={showMobileNav ? "Menü schließen" : "Menü öffnen"}>{showMobileNav ? <X size={20} /> : <Menu size={20} />}</button><div className="breadcrumb">Mein Bereich <span>/</span> <strong>Übersicht</strong></div><div className="top-actions"><span className="demo-dot" />Demo-Daten <button className="icon-button theme-top" onClick={() => setDarkMode((current) => !current)} aria-label={darkMode ? "Helles Design aktivieren" : "Dunkles Design aktivieren"}>{darkMode ? <Sun size={17} /> : <Moon size={17} />}</button><button className="icon-button" aria-label="Benachrichtigungen"><Bell size={18} /><i /></button></div></header>
         <div className="content">
           <div className="welcome-row"><div><div className="eyebrow"><Sparkles size={13} /> MIT GUTEM GEFÜHL SPAREN</div><h1>Guten Morgen, Paul<span className="wave">✳</span></h1><p className="subheading">Demoansicht · Preise und Angebote sind Beispieldaten.</p></div><button className="primary-button" onClick={() => { setNotice(""); setShowAdd(true); }}><Plus size={17} />Produkt hinzufügen</button></div>
           {notice && <div className="notice"><Check size={17} />{notice}<button onClick={() => setNotice("")} aria-label="Meldung schließen"><X size={16} /></button></div>}
@@ -102,7 +126,7 @@ export default function Home() {
           <div className="product-layout"><article className="product-card"><div className="product-head"><div className="product-title-wrap"><div className="product-image"><div className="phone"><span /></div></div><div><div className="product-kicker">SMARTPHONE · APPLE</div><h3>iPhone 16 Pro</h3><div className="product-variant">128 GB · Titan Natur</div></div></div><button className="dots-button" aria-label="Weitere Optionen"><MoreHorizontal size={19} /></button></div>
             <div className="price-row"><div><span className="muted-label">Bester Preis gerade</span><div className="big-price">929,00 <small>€</small></div></div><div className="savings-pill"><ArrowDownRight size={14} /> −70,00 €</div></div>
             <div className="chart-title"><span>Beispiel-Preisentwicklung</span><button>30 Tage <ChevronDown size={14} /></button></div><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={history} margin={{ top: 8, right: 6, left: -25, bottom: 0 }}><defs><linearGradient id="priceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#20a879" stopOpacity={0.18} /><stop offset="95%" stopColor="#20a879" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="3 5" /><XAxis dataKey="tag" axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 10 }} dy={9} /><YAxis domain={[900, 1020]} ticks={[920, 960, 1000]} axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 10 }} tickFormatter={(v) => `${v} €`} /><Tooltip formatter={(v) => [`${Number(v).toLocaleString("de-DE")} €`, "Beispielpreis"]} contentStyle={{ borderRadius: 10, border: "1px solid var(--line)", background: "var(--surface)", color: "var(--ink)", fontSize: 12 }} /><Area type="monotone" dataKey="wert" stroke="#1ca477" strokeWidth={2.5} fill="url(#priceFill)" activeDot={{ r: 5, fill: "#1ca477", stroke: "white", strokeWidth: 2 }} /></AreaChart></ResponsiveContainer></div><div className="chart-legend"><span><i /> Beispiel-Angebotspreis</span><span>Keine Live-Abfrage</span></div>
-            <div className="target-box"><div className="target-icon"><Bell size={16} /></div><div className="target-copy"><strong>Dein Wunschpreis</strong><span>Wir sagen dir Bescheid, sobald dein Ziel erreicht ist.</span></div><div className="target-price">899 €</div><button className="edit-target">Ändern</button></div>
+            <div className="target-box" id="preisalarm"><div className="target-icon"><Bell size={16} /></div>{editingTarget ? <form className="target-edit-form" onSubmit={saveTargetPrice}><label htmlFor="target-price-input">Wunschpreis in Euro</label><input id="target-price-input" type="number" min="1" step="0.01" value={targetInput} onChange={(event) => setTargetInput(event.target.value)} autoFocus required /><button type="submit" className="edit-target">Speichern</button><button type="button" className="cancel-target" onClick={() => { setTargetInput(targetPrice); setEditingTarget(false); }}>Abbrechen</button></form> : <><div className="target-copy"><strong>Dein Wunschpreis</strong><span>Wird lokal gespeichert · Alarm folgt später.</span></div><div className="target-price">{Number(targetPrice).toLocaleString("de-DE")} €</div><button className="edit-target" onClick={() => { setTargetInput(targetPrice); setEditingTarget(true); }}>Ändern</button></>}</div>
           </article>
 
           <article className="offers-card"><div className="offers-heading"><div><h3>Preisvergleich · Demo</h3><p>Beispielangebote, noch keine Händlerabfrage.</p></div><button className="help-button" aria-label="Information"><CircleHelp size={17} /></button></div><div className="best-banner"><div className="best-banner-icon"><Sparkles size={16} /></div><div><strong>Beispiel für den günstigsten Vergleichspreis</strong><span>Live-Preise werden nach Anbindung zulässiger Quellen angezeigt.</span></div></div><div className="offer-list">{offers.map((offer) => <div className={`offer-row ${offer.best ? "best-offer" : ""}`} key={offer.name}><div className={`merchant-logo ${offer.tone}`}>{offer.initials}</div><div className="merchant-detail"><strong>{offer.name}{offer.best && <span className="best-label">BEISPIEL</span>}</strong><span>{offer.shipping}</span></div><div className="offer-price"><strong>{offer.price}</strong><span>{offer.delivery}</span></div><a className="offer-link" href="#angebote" aria-label={`${offer.name} öffnen`}><ExternalLink size={15} /></a></div>)}</div><div className="offers-footer"><span><ShieldCheck size={14} /> Beispieldaten ohne Live-Status</span><button>Alle Angebote <ArrowRight size={14} /></button></div></article></div>

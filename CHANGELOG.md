@@ -20,9 +20,12 @@ Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1
 - ESLint ignoriert die getrennten Entwicklungs- und Produktions-Buildordner.
 - Contribution-Anleitung dokumentiert Build-, Lint- und Browserprüfungen für UI-Änderungen.
 - Beispieldaten im Preisvergleich, Verlauf und Dashboard sind sichtbar von Live-Preisen unterschieden.
+- Mobile Navigation lässt sich über das Menü öffnen, bedienen und wieder schließen.
+- Wunschpreis lässt sich bearbeiten und lokal im Browser speichern.
 
 ### Noch nicht enthalten
 
 - Das Dashboard nutzt Beispieldaten.
 - Produktlinks werden nur lokal im Browser gespeichert und noch nicht an ein Backend gesendet; Preise werden noch nicht live abgerufen.
+- Wunschpreise lösen noch keine Benachrichtigung aus.
 - Anmeldung, Datenbank, echte Preisalarme und Händler-Integrationen stehen aus.

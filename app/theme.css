@@ -110,3 +110,13 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
 .tracked-link a, .tracked-link button { display: grid; place-items: center; padding: 5px; border: 0; color: var(--muted); background: transparent; }
 .tracked-link a:hover, .tracked-link button:hover { color: var(--green); }
 .demo-dot { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: #d2a54a; }
+.target-edit-form { display: flex; align-items: center; gap: 7px; flex: 1; flex-wrap: wrap; }
+.target-edit-form label { width: 100%; color: var(--muted); font-size: 8px; }
+.target-edit-form input { width: 92px; padding: 6px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--surface); font: 600 10px 'DM Sans', sans-serif; }
+.cancel-target { padding: 4px; border: 0; color: var(--muted); background: transparent; font-size: 8px; }
+
+@media (max-width: 700px) {
+  .sidebar.mobile-open { display: flex; z-index: 30; width: min(82vw, 270px); box-shadow: 14px 0 40px #101b1633; }
+  .mobile-nav-backdrop { position: fixed; inset: 0; z-index: 20; width: 100%; height: 100%; border: 0; background: #10181380; }
+  .mobile-menu { position: relative; z-index: 21; }
+}
