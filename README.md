@@ -2,7 +2,7 @@
 
 **PreisPilot** ist ein deutschsprachiger, transparenter Preisvergleichs- und Preisverlauf-Tracker für Produkte im deutschen Markt.
 
-> Status: frühes Frontend-Grundgerüst mit interaktivem Dashboard. Die angezeigten Preise sind Beispieldaten; Backend und produktive Preisabfragen folgen.
+> Status: frühes Frontend-Grundgerüst mit interaktivem Dashboard und lokal gespeicherten Produktlinks. Preise und Händlerangebote sind ausdrücklich als Demo gekennzeichnet; Backend und produktive Preisabfragen folgen.
 
 ## Zielbild
 
@@ -24,7 +24,7 @@ docs/          Produkt-, Architektur- und Entscheidungsdokumentation
   adr/         Architekturentscheidungen
 ```
 
-Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen lokal gespeicherten Hell-/Dunkelmodus, eine Preisverlaufsvisualisierung und lokale Produktlink-Vormerkungen mit Entfernen-Funktion. Links bleiben derzeit im Browser des verwendeten Geräts; es findet noch keine automatische Preissuche statt. Durch das mobile Layout ist die App auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen lokal gespeicherten Hell-/Dunkelmodus, eine Preisverlaufsvisualisierung und lokale Produktlink-Vormerkungen mit Entfernen-Funktion. Beispielpreise und Angebote sind sichtbar als Demo gekennzeichnet. Links bleiben derzeit im Browser des verwendeten Geräts; es findet noch keine automatische Preissuche statt. Durch das mobile Layout ist die App auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 
 ## Lokal starten
 
@@ -44,6 +44,7 @@ Entwicklungsserver und Produktionsbuild verwenden getrennte Ausgabeverzeichnisse
 - Änderungen und noch offene Aufgaben: [CHANGELOG.md](CHANGELOG.md)
 - Roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)
 - Beiträge und Entwicklungsablauf: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Änderungen an der Oberfläche werden vor Abschluss auch im Browser geprüft; Details stehen in [CONTRIBUTING.md](CONTRIBUTING.md#vor-dem-abschluss-prüfen).
 - Architektur: [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md)
 - Datenquellen: [docs/DATENQUELLEN.md](docs/DATENQUELLEN.md)
 

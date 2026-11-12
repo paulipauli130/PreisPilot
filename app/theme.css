@@ -109,3 +109,4 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
 .tracked-info span { overflow: hidden; margin-top: 3px; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .tracked-link a, .tracked-link button { display: grid; place-items: center; padding: 5px; border: 0; color: var(--muted); background: transparent; }
 .tracked-link a:hover, .tracked-link button:hover { color: var(--green); }
+.demo-dot { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: #d2a54a; }

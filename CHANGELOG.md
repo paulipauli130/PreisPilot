@@ -18,6 +18,8 @@ Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1
 - Contributor-Anleitung enthält einen Datenschutzcheck für private lokale Pfade.
 - Entwicklungsserver und Produktionsbuild verwenden getrennte Next.js-Ausgabeverzeichnisse.
 - ESLint ignoriert die getrennten Entwicklungs- und Produktions-Buildordner.
+- Contribution-Anleitung dokumentiert Build-, Lint- und Browserprüfungen für UI-Änderungen.
+- Beispieldaten im Preisvergleich, Verlauf und Dashboard sind sichtbar von Live-Preisen unterschieden.
 
 ### Noch nicht enthalten
 
