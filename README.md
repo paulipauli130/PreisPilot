@@ -24,7 +24,18 @@ docs/          Produkt-, Architektur- und Entscheidungsdokumentation
   adr/         Architekturentscheidungen
 ```
 
-Die spätere Anwendung wird als modularer Monolith aufgebaut: Weboberfläche, API, Hintergrundjobs und Datenzugriff sind klar getrennt, aber in einem wartbaren Projekt gebündelt. Details stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Durch das mobile Layout ist sie auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+
+## Lokal starten
+
+Voraussetzung: Node.js 20 oder neuer.
+
+```bash
+npm install
+npm run dev
+```
+
+Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Die aktuelle Dashboard-Ansicht verwendet Beispieldaten. Echte Preisabfragen werden ergänzt, sobald passende offizielle API- oder Partnerzugänge feststehen.
 
 ## Datenquellen – ehrlich eingeordnet
 

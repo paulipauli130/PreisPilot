@@ -1,0 +1,11 @@
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "PreisPilot – Preise im Blick",
+  description: "Produkte vergleichen, Preisverläufe verstehen und den besten Moment zum Kaufen finden.",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="de"><body>{children}</body></html>;
+}
