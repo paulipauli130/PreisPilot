@@ -94,3 +94,18 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
 .theme-switch i { display: block; height: 12px; width: 12px; border-radius: 50%; background: white; box-shadow: 0 1px 2px #0002; transition: transform .18s ease; }
 .theme-switch.on { background: #25845f; }
 .theme-switch.on i { transform: translateX(11px); }
+
+.tracked-links { margin: -2px 0 17px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.tracked-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.tracked-heading strong, .tracked-heading span { display: block; }
+.tracked-heading strong { font-size: 10px; }
+.tracked-heading div > span { margin-top: 3px; color: var(--muted); font-size: 9px; }
+.local-badge { display: inline-flex !important; align-items: center; gap: 4px; color: #388160; background: var(--soft-green); border-radius: 5px; padding: 4px 6px; font-size: 8px; }
+.tracked-link { display: flex; align-items: center; gap: 9px; min-height: 42px; border-top: 1px solid var(--line); }
+.tracked-icon { width: 27px; height: 27px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 6px; color: var(--green); background: var(--soft-green); }
+.tracked-info { flex: 1; min-width: 0; }
+.tracked-info strong, .tracked-info span { display: block; }
+.tracked-info strong { font-size: 9px; }
+.tracked-info span { overflow: hidden; margin-top: 3px; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.tracked-link a, .tracked-link button { display: grid; place-items: center; padding: 5px; border: 0; color: var(--muted); background: transparent; }
+.tracked-link a:hover, .tracked-link button:hover { color: var(--green); }

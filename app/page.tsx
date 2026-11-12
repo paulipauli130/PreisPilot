@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowDownRight, ArrowRight, Bell, Check, ChevronDown, CircleHelp, ExternalLink, LayoutDashboard, Link2, Menu, Moon, MoreHorizontal, Package, Plus, Search, Settings2, ShieldCheck, Sparkles, Sun, TrendingDown, X } from "lucide-react";
+import { ArrowDownRight, ArrowRight, Bell, Check, ChevronDown, CircleHelp, ExternalLink, LayoutDashboard, Link2, Menu, Moon, MoreHorizontal, Package, Plus, Search, ShieldCheck, Sparkles, Sun, TrendingDown, X } from "lucide-react";
 
 const history = [
   { tag: "12. Okt", wert: 999 }, { tag: "19. Okt", wert: 979 }, { tag: "26. Okt", wert: 989 },
@@ -16,11 +16,15 @@ const offers = [
   { name: "Apple Store", initials: "●", tone: "apple", price: "999,00 €", shipping: "Kostenloser Versand", delivery: "1–2 Tage", best: false },
 ];
 
+type TrackedProduct = { id: string; url: string; shop: string; addedAt: string };
+
 export default function Home() {
   const [showAdd, setShowAdd] = useState(false);
   const [url, setUrl] = useState("");
   const [notice, setNotice] = useState("");
   const [darkMode, setDarkMode] = useState(false);
+  const [trackedProducts, setTrackedProducts] = useState<TrackedProduct[]>([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("preispilot-theme");
@@ -33,12 +37,46 @@ export default function Home() {
     window.localStorage.setItem("preispilot-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
+  useEffect(() => {
+    try {
+      const savedProducts = window.localStorage.getItem("preispilot-products");
+      if (savedProducts) setTrackedProducts(JSON.parse(savedProducts) as TrackedProduct[]);
+    } catch {
+      window.localStorage.removeItem("preispilot-products");
+    } finally {
+      setProductsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (productsLoaded) window.localStorage.setItem("preispilot-products", JSON.stringify(trackedProducts));
+  }, [productsLoaded, trackedProducts]);
+
   function addProduct(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!url.trim()) return;
-    setNotice("Link gespeichert – die automatische Preissuche richten wir als nächsten Schritt ein.");
-    setUrl("");
-    setShowAdd(false);
+    try {
+      const parsedUrl = new URL(url.trim());
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error("Ungültiges Protokoll");
+      const duplicate = trackedProducts.some((product) => product.url === parsedUrl.toString());
+      if (duplicate) {
+        setNotice("Diesen Produktlink hast du bereits vorgemerkt.");
+        setShowAdd(false);
+        return;
+      }
+      const host = parsedUrl.hostname.replace(/^www\./, "");
+      const shop = host.split(".").slice(0, -1).join(".") || host;
+      setTrackedProducts((products) => [{ id: crypto.randomUUID(), url: parsedUrl.toString(), shop, addedAt: new Date().toISOString() }, ...products]);
+      setNotice("Produktlink wurde vorgemerkt. Die automatische Preisabfrage folgt mit der Backend-Anbindung.");
+      setUrl("");
+      setShowAdd(false);
+    } catch {
+      setNotice("Bitte gib einen gültigen Produktlink mit https:// ein.");
+    }
+  }
+
+  function removeProduct(id: string) {
+    setTrackedProducts((products) => products.filter((product) => product.id !== id));
   }
 
   return (
@@ -46,7 +84,7 @@ export default function Home() {
       <aside className="sidebar">
         <a className="brand" href="#"><span className="brand-mark"><TrendingDown size={20} strokeWidth={2.5} /></span><span>preis<span className="brand-light">pilot</span></span></a>
         <div className="workspace-label">DEIN ÜBERBLICK</div>
-        <nav className="side-nav"><a className="nav-item active" href="#"><LayoutDashboard size={18} />Übersicht</a><a className="nav-item" href="#produkte"><Package size={18} />Meine Produkte<span className="nav-count">4</span></a><a className="nav-item" href="#"><Bell size={18} />Preisalarm</a></nav>
+        <nav className="side-nav"><a className="nav-item active" href="#"><LayoutDashboard size={18} />Übersicht</a><a className="nav-item" href="#produkte"><Package size={18} />Meine Produkte<span className="nav-count">{trackedProducts.length + 4}</span></a><a className="nav-item" href="#"><Bell size={18} />Preisalarm</a></nav>
         <div className="side-bottom"><div className="source-note"><span className="source-icon"><ShieldCheck size={17} /></span><div><strong>Preise, denen du<br />vertrauen kannst.</strong><p>Jedes Angebot mit<br />Quelle &amp; Zeitstempel.</p></div></div><button className="nav-item settings" onClick={() => setDarkMode((current) => !current)} aria-label={darkMode ? "Zum hellen Modus wechseln" : "Zum dunklen Modus wechseln"}>{darkMode ? <Sun size={18} /> : <Moon size={18} />}{darkMode ? "Helles Design" : "Dunkles Design"}<span className={`theme-switch ${darkMode ? "on" : ""}`}><i /></span></button><div className="profile"><div className="avatar">P</div><div><strong>Paul</strong><span>Mein PreisPilot</span></div><MoreHorizontal size={19} className="profile-more" /></div></div>
       </aside>
 
@@ -55,9 +93,11 @@ export default function Home() {
         <div className="content">
           <div className="welcome-row"><div><div className="eyebrow"><Sparkles size={13} /> MIT GUTEM GEFÜHL SPAREN</div><h1>Guten Morgen, Paul<span className="wave">✳</span></h1><p className="subheading">Hier ist dein persönlicher Preisüberblick.</p></div><button className="primary-button" onClick={() => { setNotice(""); setShowAdd(true); }}><Plus size={17} />Produkt hinzufügen</button></div>
           {notice && <div className="notice"><Check size={17} />{notice}<button onClick={() => setNotice("")} aria-label="Meldung schließen"><X size={16} /></button></div>}
-          <div className="summary-grid"><article className="summary-card"><div className="summary-top"><span>Produkte im Blick</span><span className="summary-icon blue"><Package size={17} /></span></div><div className="summary-value">04 <small>Produkte</small></div><div className="summary-foot"><span className="mini-dots"><i /><i /><i /><i /></span> Davon 2 mit Preisalarm</div></article><article className="summary-card"><div className="summary-top"><span>Gesamtersparnis</span><span className="summary-icon green"><ArrowDownRight size={18} /></span></div><div className="summary-value">128,50 <small>€</small></div><div className="summary-foot positive"><TrendingDown size={14} /> Im Vergleich zum Startpreis</div></article><article className="summary-card"><div className="summary-top"><span>Beste Gelegenheit</span><span className="summary-icon amber"><Sparkles size={17} /></span></div><div className="summary-value opportunity">iPhone 16 Pro</div><div className="summary-foot"><span className="deal-dot" /> 70 € unter dem 30-Tage-Schnitt</div></article></div>
+          <div className="summary-grid"><article className="summary-card"><div className="summary-top"><span>Produkte im Blick</span><span className="summary-icon blue"><Package size={17} /></span></div><div className="summary-value">{String(trackedProducts.length + 4).padStart(2, "0")} <small>Produkte</small></div><div className="summary-foot"><span className="mini-dots"><i /><i /><i /><i /></span> Davon 2 mit Preisalarm</div></article><article className="summary-card"><div className="summary-top"><span>Gesamtersparnis</span><span className="summary-icon green"><ArrowDownRight size={18} /></span></div><div className="summary-value">128,50 <small>€</small></div><div className="summary-foot positive"><TrendingDown size={14} /> Im Vergleich zum Startpreis</div></article><article className="summary-card"><div className="summary-top"><span>Beste Gelegenheit</span><span className="summary-icon amber"><Sparkles size={17} /></span></div><div className="summary-value opportunity">iPhone 16 Pro</div><div className="summary-foot"><span className="deal-dot" /> 70 € unter dem 30-Tage-Schnitt</div></article></div>
 
           <div className="section-heading" id="produkte"><div><h2>Deine Preisbeobachtungen</h2><p>Deine Produkte und ihre Entwicklung auf einen Blick.</p></div><button className="text-button">Alle Produkte <ArrowRight size={15} /></button></div>
+
+          {trackedProducts.length > 0 && <section className="tracked-links" aria-label="Vorgemerkte Produktlinks"><div className="tracked-heading"><div><strong>Vorgemerkte Produktlinks</strong><span>Diese Links sind auf diesem Gerät gespeichert.</span></div><span className="local-badge"><Check size={12} /> Lokal</span></div>{trackedProducts.map((product) => <div className="tracked-link" key={product.id}><div className="tracked-icon"><Package size={16} /></div><div className="tracked-info"><strong>{product.shop}</strong><span title={product.url}>{product.url}</span></div><a href={product.url} target="_blank" rel="noreferrer" aria-label={`${product.shop} öffnen`}><ExternalLink size={15} /></a><button onClick={() => removeProduct(product.id)} aria-label={`${product.shop} entfernen`}><X size={15} /></button></div>)}</section>}
 
           <div className="product-layout"><article className="product-card"><div className="product-head"><div className="product-title-wrap"><div className="product-image"><div className="phone"><span /></div></div><div><div className="product-kicker">SMARTPHONE · APPLE</div><h3>iPhone 16 Pro</h3><div className="product-variant">128 GB · Titan Natur</div></div></div><button className="dots-button" aria-label="Weitere Optionen"><MoreHorizontal size={19} /></button></div>
             <div className="price-row"><div><span className="muted-label">Bester Preis gerade</span><div className="big-price">929,00 <small>€</small></div></div><div className="savings-pill"><ArrowDownRight size={14} /> −70,00 €</div></div>

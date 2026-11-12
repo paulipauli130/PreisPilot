@@ -24,7 +24,7 @@ docs/          Produkt-, Architektur- und Entscheidungsdokumentation
   adr/         Architekturentscheidungen
 ```
 
-Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen lokal gespeicherten Hell-/Dunkelmodus, eine Preisverlaufsvisualisierung und einen Dialog zum Vormerken eines Produktlinks. Durch das mobile Layout ist sie auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen lokal gespeicherten Hell-/Dunkelmodus, eine Preisverlaufsvisualisierung und lokale Produktlink-Vormerkungen mit Entfernen-Funktion. Links bleiben derzeit im Browser des verwendeten Geräts; es findet noch keine automatische Preissuche statt. Durch das mobile Layout ist die App auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 
 ## Lokal starten
 

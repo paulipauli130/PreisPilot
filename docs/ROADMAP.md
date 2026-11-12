@@ -12,6 +12,7 @@
 - [x] Technologie-Stack für das Frontend festlegen: Next.js, React und TypeScript
 - [x] Responsive Dashboard-Grundlage mit Diagramm erstellen
 - [x] Hell-/Dunkelmodus mit lokal gespeicherter Auswahl ergänzen
+- [x] Produktlinks lokal vormerken, wieder anzeigen und entfernen
 - [x] Lokale Startanleitung dokumentieren
 - [ ] Backend, API, Datenbank und Hintergrundaufgaben aufsetzen
 - [ ] Datenmodell für Produkte, Varianten, Angebote und Snapshots implementieren

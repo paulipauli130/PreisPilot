@@ -9,7 +9,7 @@ Danke für dein Interesse an PreisPilot. Diese Anleitung beschreibt den aktuelle
 - npm (unter PowerShell bei blockiertem `npm.ps1` die Befehle als `npm.cmd` ausführen)
 
 ```powershell
-cd C:\Users\paulb\Documents\GitHub\PreisPilot
+cd <Projektordner>
 npm.cmd install
 npm.cmd run dev
 ```
@@ -28,7 +28,8 @@ npm.cmd run build
 3. Achte darauf, dass neue UI-Elemente im Hell- und Dunkelmodus lesbar sind.
 4. Speichere keine API-Schlüssel, Zugangsdaten oder personenbezogenen Beispieldaten im Repository.
 5. Ergänze bei jeder relevanten Änderung README, CHANGELOG und Roadmap, damit die Dokumentation zum tatsächlichen Stand passt.
-6. Beschreibe Änderungen mit einer klaren Commit-Nachricht, zum Beispiel `feat: Preisalarm-Einstellungen ergänzen` oder `docs: Integrationsstatus aktualisieren`.
+6. Prüfe vor dem Commit, dass keine privaten lokalen Dateipfade, Benutzernamen oder persönlichen Verzeichnisnamen in Dateien oder Beispielen stehen. Verwende relative Pfade wie `app/page.tsx` und neutrale Platzhalter wie `<Projektordner>`.
+7. Beschreibe Änderungen mit einer klaren Commit-Nachricht, zum Beispiel `feat: Preisalarm-Einstellungen ergänzen` oder `docs: Integrationsstatus aktualisieren`.
 
 ## Datenquellen
 
