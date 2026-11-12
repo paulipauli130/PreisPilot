@@ -7,12 +7,15 @@
 - Quellenstrategie und Integrationsregeln definiert
 - Architekturentscheidung zur Datenquellen-Anbindung festgehalten
 
-## Phase 1 – Technische Basis
+## Phase 1 – Technische Basis (in Arbeit)
 
-- Technologie-Stack und Deployment-Ziel auswählen
-- Web-App, API, Datenbank und Lokalentwicklung einrichten
-- Datenmodell für Produkte, Varianten, Angebote und Snapshots implementieren
-- Designsystem und deutschsprachige Kernoberfläche erstellen
+- [x] Technologie-Stack für das Frontend festlegen: Next.js, React und TypeScript
+- [x] Responsive Dashboard-Grundlage mit Diagramm erstellen
+- [x] Hell-/Dunkelmodus mit lokal gespeicherter Auswahl ergänzen
+- [x] Lokale Startanleitung dokumentieren
+- [ ] Backend, API, Datenbank und Hintergrundaufgaben aufsetzen
+- [ ] Datenmodell für Produkte, Varianten, Angebote und Snapshots implementieren
+- [ ] Deployment-Ziel auswählen und einrichten
 
 ## Phase 2 – Erstes nutzbares Produkt
 
@@ -20,6 +23,10 @@
 - einen legal verfügbaren Quellen-Adapter implementieren
 - Angebote vergleichen und Preisverlauf darstellen
 - Zielpreis und Benachrichtigungsregel speichern
+
+## Laufende Qualität und Dokumentation
+
+Bei jeder Änderung werden README, Changelog und Roadmap an den erreichten Projektstand angepasst. Beiträge sollen bestehende Quellenregeln und die modulare Architektur berücksichtigen.
 
 ## Phase 3 – Datenquellen erweitern
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowDownRight, ArrowRight, Bell, Check, ChevronDown, CircleHelp, ExternalLink, LayoutDashboard, Link2, Menu, MoreHorizontal, Package, Plus, Search, Settings2, ShieldCheck, Sparkles, TrendingDown, X } from "lucide-react";
+import { ArrowDownRight, ArrowRight, Bell, Check, ChevronDown, CircleHelp, ExternalLink, LayoutDashboard, Link2, Menu, Moon, MoreHorizontal, Package, Plus, Search, Settings2, ShieldCheck, Sparkles, Sun, TrendingDown, X } from "lucide-react";
 
 const history = [
   { tag: "12. Okt", wert: 999 }, { tag: "19. Okt", wert: 979 }, { tag: "26. Okt", wert: 989 },
@@ -20,6 +20,18 @@ export default function Home() {
   const [showAdd, setShowAdd] = useState(false);
   const [url, setUrl] = useState("");
   const [notice, setNotice] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem("preispilot-theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setDarkMode(savedTheme ? savedTheme === "dark" : prefersDark);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = darkMode ? "dark" : "light";
+    window.localStorage.setItem("preispilot-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   function addProduct(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,11 +47,11 @@ export default function Home() {
         <a className="brand" href="#"><span className="brand-mark"><TrendingDown size={20} strokeWidth={2.5} /></span><span>preis<span className="brand-light">pilot</span></span></a>
         <div className="workspace-label">DEIN ÜBERBLICK</div>
         <nav className="side-nav"><a className="nav-item active" href="#"><LayoutDashboard size={18} />Übersicht</a><a className="nav-item" href="#produkte"><Package size={18} />Meine Produkte<span className="nav-count">4</span></a><a className="nav-item" href="#"><Bell size={18} />Preisalarm</a></nav>
-        <div className="side-bottom"><div className="source-note"><span className="source-icon"><ShieldCheck size={17} /></span><div><strong>Preise, denen du<br />vertrauen kannst.</strong><p>Jedes Angebot mit<br />Quelle &amp; Zeitstempel.</p></div></div><button className="nav-item settings"><Settings2 size={18} />Einstellungen</button><div className="profile"><div className="avatar">P</div><div><strong>Paul</strong><span>Mein PreisPilot</span></div><MoreHorizontal size={19} className="profile-more" /></div></div>
+        <div className="side-bottom"><div className="source-note"><span className="source-icon"><ShieldCheck size={17} /></span><div><strong>Preise, denen du<br />vertrauen kannst.</strong><p>Jedes Angebot mit<br />Quelle &amp; Zeitstempel.</p></div></div><button className="nav-item settings" onClick={() => setDarkMode((current) => !current)} aria-label={darkMode ? "Zum hellen Modus wechseln" : "Zum dunklen Modus wechseln"}>{darkMode ? <Sun size={18} /> : <Moon size={18} />}{darkMode ? "Helles Design" : "Dunkles Design"}<span className={`theme-switch ${darkMode ? "on" : ""}`}><i /></span></button><div className="profile"><div className="avatar">P</div><div><strong>Paul</strong><span>Mein PreisPilot</span></div><MoreHorizontal size={19} className="profile-more" /></div></div>
       </aside>
 
       <section className="main-area">
-        <header className="topbar"><button className="mobile-menu" aria-label="Menü"><Menu size={20} /></button><div className="breadcrumb">Mein Bereich <span>/</span> <strong>Übersicht</strong></div><div className="top-actions"><span className="live-dot" />Alle Preise aktuell <button className="icon-button" aria-label="Benachrichtigungen"><Bell size={18} /><i /></button></div></header>
+        <header className="topbar"><button className="mobile-menu" aria-label="Menü"><Menu size={20} /></button><div className="breadcrumb">Mein Bereich <span>/</span> <strong>Übersicht</strong></div><div className="top-actions"><span className="live-dot" />Alle Preise aktuell <button className="icon-button theme-top" onClick={() => setDarkMode((current) => !current)} aria-label={darkMode ? "Helles Design aktivieren" : "Dunkles Design aktivieren"}>{darkMode ? <Sun size={17} /> : <Moon size={17} />}</button><button className="icon-button" aria-label="Benachrichtigungen"><Bell size={18} /><i /></button></div></header>
         <div className="content">
           <div className="welcome-row"><div><div className="eyebrow"><Sparkles size={13} /> MIT GUTEM GEFÜHL SPAREN</div><h1>Guten Morgen, Paul<span className="wave">✳</span></h1><p className="subheading">Hier ist dein persönlicher Preisüberblick.</p></div><button className="primary-button" onClick={() => { setNotice(""); setShowAdd(true); }}><Plus size={17} />Produkt hinzufügen</button></div>
           {notice && <div className="notice"><Check size={17} />{notice}<button onClick={() => setNotice("")} aria-label="Meldung schließen"><X size={16} /></button></div>}
@@ -49,7 +61,7 @@ export default function Home() {
 
           <div className="product-layout"><article className="product-card"><div className="product-head"><div className="product-title-wrap"><div className="product-image"><div className="phone"><span /></div></div><div><div className="product-kicker">SMARTPHONE · APPLE</div><h3>iPhone 16 Pro</h3><div className="product-variant">128 GB · Titan Natur</div></div></div><button className="dots-button" aria-label="Weitere Optionen"><MoreHorizontal size={19} /></button></div>
             <div className="price-row"><div><span className="muted-label">Bester Preis gerade</span><div className="big-price">929,00 <small>€</small></div></div><div className="savings-pill"><ArrowDownRight size={14} /> −70,00 €</div></div>
-            <div className="chart-title"><span>Preisentwicklung</span><button>30 Tage <ChevronDown size={14} /></button></div><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={history} margin={{ top: 8, right: 6, left: -25, bottom: 0 }}><defs><linearGradient id="priceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#20a879" stopOpacity={0.18} /><stop offset="95%" stopColor="#20a879" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid vertical={false} stroke="#edf0ed" strokeDasharray="3 5" /><XAxis dataKey="tag" axisLine={false} tickLine={false} tick={{ fill: "#98a19c", fontSize: 10 }} dy={9} /><YAxis domain={[900, 1020]} ticks={[920, 960, 1000]} axisLine={false} tickLine={false} tick={{ fill: "#98a19c", fontSize: 10 }} tickFormatter={(v) => `${v} €`} /><Tooltip formatter={(v) => [`${Number(v).toLocaleString("de-DE")} €`, "Preis"]} contentStyle={{ borderRadius: 10, border: "1px solid #e8ece8", fontSize: 12 }} /><Area type="monotone" dataKey="wert" stroke="#1ca477" strokeWidth={2.5} fill="url(#priceFill)" activeDot={{ r: 5, fill: "#1ca477", stroke: "white", strokeWidth: 2 }} /></AreaChart></ResponsiveContainer></div><div className="chart-legend"><span><i /> Bester Angebotspreis</span><span>Aktualisiert vor 12 Min.</span></div>
+            <div className="chart-title"><span>Preisentwicklung</span><button>30 Tage <ChevronDown size={14} /></button></div><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={history} margin={{ top: 8, right: 6, left: -25, bottom: 0 }}><defs><linearGradient id="priceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#20a879" stopOpacity={0.18} /><stop offset="95%" stopColor="#20a879" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="3 5" /><XAxis dataKey="tag" axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 10 }} dy={9} /><YAxis domain={[900, 1020]} ticks={[920, 960, 1000]} axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 10 }} tickFormatter={(v) => `${v} €`} /><Tooltip formatter={(v) => [`${Number(v).toLocaleString("de-DE")} €`, "Preis"]} contentStyle={{ borderRadius: 10, border: "1px solid var(--line)", background: "var(--surface)", color: "var(--ink)", fontSize: 12 }} /><Area type="monotone" dataKey="wert" stroke="#1ca477" strokeWidth={2.5} fill="url(#priceFill)" activeDot={{ r: 5, fill: "#1ca477", stroke: "white", strokeWidth: 2 }} /></AreaChart></ResponsiveContainer></div><div className="chart-legend"><span><i /> Bester Angebotspreis</span><span>Aktualisiert vor 12 Min.</span></div>
             <div className="target-box"><div className="target-icon"><Bell size={16} /></div><div className="target-copy"><strong>Dein Wunschpreis</strong><span>Wir sagen dir Bescheid, sobald dein Ziel erreicht ist.</span></div><div className="target-price">899 €</div><button className="edit-target">Ändern</button></div>
           </article>
 

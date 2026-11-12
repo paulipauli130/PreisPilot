@@ -2,7 +2,7 @@
 
 **PreisPilot** ist ein deutschsprachiger, transparenter Preisvergleichs- und Preisverlauf-Tracker für Produkte im deutschen Markt.
 
-> Status: Grundstruktur und Produktkonzept. Noch keine produktive Datenerhebung.
+> Status: frühes Frontend-Grundgerüst mit interaktivem Dashboard. Die angezeigten Preise sind Beispieldaten; Backend und produktive Preisabfragen folgen.
 
 ## Zielbild
 
@@ -24,18 +24,26 @@ docs/          Produkt-, Architektur- und Entscheidungsdokumentation
   adr/         Architekturentscheidungen
 ```
 
-Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Durch das mobile Layout ist sie auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen lokal gespeicherten Hell-/Dunkelmodus, eine Preisverlaufsvisualisierung und einen Dialog zum Vormerken eines Produktlinks. Durch das mobile Layout ist sie auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 
 ## Lokal starten
 
-Voraussetzung: Node.js 20 oder neuer.
+Voraussetzung: Node.js 20 oder neuer. In PowerShell kann bei gesperrten Skripten `npm.cmd` verwendet werden.
 
 ```bash
-npm install
-npm run dev
+npm.cmd install
+npm.cmd run dev
 ```
 
-Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Die aktuelle Dashboard-Ansicht verwendet Beispieldaten. Echte Preisabfragen werden ergänzt, sobald passende offizielle API- oder Partnerzugänge feststehen.
+Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Alternativ funktionieren `npm install` und `npm run dev` in Terminals, die npm direkt ausführen dürfen. Für einen Produktionsbuild: `npm.cmd run build`.
+
+## Projektstand und Mitarbeit
+
+- Änderungen und noch offene Aufgaben: [CHANGELOG.md](CHANGELOG.md)
+- Roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)
+- Beiträge und Entwicklungsablauf: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Architektur: [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md)
+- Datenquellen: [docs/DATENQUELLEN.md](docs/DATENQUELLEN.md)
 
 ## Datenquellen – ehrlich eingeordnet
 
