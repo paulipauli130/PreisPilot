@@ -7,7 +7,7 @@ labels: data-source
 
 ## Quelle
 
-## Zweck in PreisPilot
+## Zweck in Sparwache
 
 ## Offizieller Zugang
 

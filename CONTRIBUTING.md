@@ -1,6 +1,6 @@
-# Mitwirken bei PreisPilot
+# Mitwirken bei Sparwache
 
-Danke für dein Interesse an PreisPilot. Diese Anleitung beschreibt den aktuellen Entwicklungsablauf.
+Danke für dein Interesse an Sparwache. Diese Anleitung beschreibt den aktuellen Entwicklungsablauf.
 
 ## Entwicklungsumgebung
 

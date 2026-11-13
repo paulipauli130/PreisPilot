@@ -24,7 +24,7 @@ type EbaySearchResponse = {
 };
 
 declare global {
-  var __preisPilotEbayToken: EbayToken | undefined;
+  var __sparwacheEbayToken: EbayToken | undefined;
 }
 
 const API_SCOPE = "https://api.ebay.com/oauth/api_scope";
@@ -50,7 +50,7 @@ async function getApplicationToken(): Promise<string> {
     throw new Error("eBay ist noch nicht eingerichtet. Ergänze EBAY_CLIENT_ID und EBAY_CLIENT_SECRET in der lokalen .env-Datei.");
   }
 
-  const cachedToken = globalThis.__preisPilotEbayToken;
+  const cachedToken = globalThis.__sparwacheEbayToken;
   if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value;
 
   const isSandbox = process.env.EBAY_SANDBOX === "true";
@@ -68,7 +68,7 @@ async function getApplicationToken(): Promise<string> {
   if (!response.ok) throw new Error("eBay hat die Zugangsdaten abgelehnt. Prüfe Schlüssel, Umgebung und Produktionsfreigabe.");
   const result = await response.json() as { access_token?: string; expires_in?: number };
   if (!result.access_token) throw new Error("eBay hat kein Zugriffstoken zurückgegeben.");
-  globalThis.__preisPilotEbayToken = {
+  globalThis.__sparwacheEbayToken = {
     value: result.access_token,
     expiresAt: Date.now() + Math.max(60, result.expires_in ?? 3600) * 1000,
   };
@@ -97,10 +97,10 @@ export async function searchEbayOffers(searchTitle: string): Promise<LiveOffer[]
   const response = await fetch(query, { headers, cache: "no-store", signal: AbortSignal.timeout(15_000) });
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) {
-      globalThis.__preisPilotEbayToken = undefined;
+      globalThis.__sparwacheEbayToken = undefined;
       throw new Error("eBay hat die Suche nicht freigegeben. Für Live-Daten ist ein genehmigter Produktionszugang zur Browse API erforderlich.");
     }
-    if (response.status === 429) throw new Error("eBay hat das Abruflimit erreicht. PreisPilot versucht es beim nächsten Intervall erneut.");
+    if (response.status === 429) throw new Error("eBay hat das Abruflimit erreicht. Sparwache versucht es beim nächsten Intervall erneut.");
     throw new Error(`Die eBay-Preissuche ist fehlgeschlagen (HTTP ${response.status}).`);
   }
   const result = await response.json() as EbaySearchResponse;

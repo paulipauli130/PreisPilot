@@ -3,7 +3,7 @@ import "./globals.css";
 import "./theme.css";
 
 export const metadata: Metadata = {
-  title: "PreisPilot – Preise im Blick",
+  title: "Sparwache – Preise im Blick",
   description: "Produkte vergleichen, Preisverläufe verstehen und den besten Moment zum Kaufen finden.",
 };
 

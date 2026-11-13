@@ -2,7 +2,7 @@
 
 ## Leitidee
 
-PreisPilot wird als modularer Monolith entwickelt. Das hält die erste Version einfach betreibbar und lässt sich später bei Bedarf in getrennte Dienste aufteilen.
+Sparwache wird als modularer Monolith entwickelt. Das hält die erste Version einfach betreibbar und lässt sich später bei Bedarf in getrennte Dienste aufteilen.
 
 ```text
 Web-App

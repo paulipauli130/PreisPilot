@@ -46,14 +46,18 @@ export default function Home() {
   const initialRefreshStarted = useRef(false);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("preispilot-theme");
+    const savedTheme = window.localStorage.getItem("sparwache-theme") ?? window.localStorage.getItem("preispilot-theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     setDarkMode(savedTheme ? savedTheme === "dark" : prefersDark);
+    if (savedTheme && !window.localStorage.getItem("sparwache-theme")) {
+      window.localStorage.setItem("sparwache-theme", savedTheme);
+      window.localStorage.removeItem("preispilot-theme");
+    }
   }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = darkMode ? "dark" : "light";
-    window.localStorage.setItem("preispilot-theme", darkMode ? "dark" : "light");
+    window.localStorage.setItem("sparwache-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
   const refreshProduct = useCallback(async (productId: string, quiet = false) => {
@@ -89,7 +93,7 @@ export default function Home() {
     let active = true;
     async function loadProducts() {
       try {
-        const legacyProducts = JSON.parse(window.localStorage.getItem("preispilot-products") ?? "[]") as Array<{ url?: string }>;
+        const legacyProducts = JSON.parse(window.localStorage.getItem("sparwache-products") ?? window.localStorage.getItem("preispilot-products") ?? "[]") as Array<{ url?: string }>;
         for (const legacyProduct of legacyProducts) {
           if (legacyProduct.url) {
             await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: legacyProduct.url }) });
@@ -124,6 +128,7 @@ export default function Home() {
             void (async () => { for (const product of staleProducts) await refreshProduct(product.id, true); })();
           }
         }
+        window.localStorage.removeItem("sparwache-products");
         window.localStorage.removeItem("preispilot-products");
       } catch {
         if (active) setNotice("Produkte konnten nicht aus der lokalen Datenbank geladen werden. Bitte prüfe, ob die Datenbank eingerichtet ist.");
@@ -131,17 +136,19 @@ export default function Home() {
         if (active) setProductsLoaded(true);
       }
     }
-    const savedTarget = window.localStorage.getItem("preispilot-target-price");
+    const savedTarget = window.localStorage.getItem("sparwache-target-price") ?? window.localStorage.getItem("preispilot-target-price");
     if (savedTarget && Number.isFinite(Number(savedTarget)) && Number(savedTarget) > 0) {
       setTargetPrice(savedTarget);
       setTargetInput(savedTarget);
+      window.localStorage.setItem("sparwache-target-price", savedTarget);
+      window.localStorage.removeItem("preispilot-target-price");
     }
     void loadProducts();
     return () => { active = false; };
   }, [refreshProduct]);
 
   useEffect(() => {
-    if (productsLoaded) window.localStorage.setItem("preispilot-target-price", targetPrice);
+    if (productsLoaded) window.localStorage.setItem("sparwache-target-price", targetPrice);
   }, [productsLoaded, targetPrice]);
 
   async function addProduct(event: React.FormEvent<HTMLFormElement>) {
@@ -265,10 +272,10 @@ export default function Home() {
     <main className="app-shell">
       {showMobileNav && <button className="mobile-nav-backdrop" onClick={() => setShowMobileNav(false)} aria-label="Menü schließen" />}
       <aside className={`sidebar ${showMobileNav ? "mobile-open" : ""}`}>
-        <a className="brand" href="#"><span className="brand-mark"><TrendingDown size={20} strokeWidth={2.5} /></span><span>preis<span className="brand-light">pilot</span></span></a>
+        <a className="brand" href="#"><span className="brand-mark"><TrendingDown size={20} strokeWidth={2.5} /></span><span>spar<span className="brand-light">wache</span></span></a>
         <div className="workspace-label">DEIN ÜBERBLICK</div>
         <nav className="side-nav"><a className="nav-item active" href="#" onClick={() => setShowMobileNav(false)}><LayoutDashboard size={18} />Übersicht</a><a className="nav-item" href="#produkte" onClick={() => setShowMobileNav(false)}><Package size={18} />Meine Produkte<span className="nav-count">{trackedProducts.length + 4}</span></a><a className="nav-item" href="#preisalarm" onClick={() => setShowMobileNav(false)}><Bell size={18} />Preisalarm</a></nav>
-        <div className="side-bottom"><div className="source-note"><span className="source-icon"><ShieldCheck size={17} /></span><div><strong>Preise transparent<br />vergleichen.</strong><p>Quellen und Zeitstempel<br />folgen mit Live-Daten.</p></div></div><button className="nav-item settings" onClick={() => setDarkMode((current) => !current)} aria-label={darkMode ? "Zum hellen Modus wechseln" : "Zum dunklen Modus wechseln"}>{darkMode ? <Sun size={18} /> : <Moon size={18} />}{darkMode ? "Helles Design" : "Dunkles Design"}<span className={`theme-switch ${darkMode ? "on" : ""}`}><i /></span></button><div className="profile"><div className="avatar">P</div><div><strong>Paul</strong><span>Mein PreisPilot</span></div><MoreHorizontal size={19} className="profile-more" /></div></div>
+        <div className="side-bottom"><div className="source-note"><span className="source-icon"><ShieldCheck size={17} /></span><div><strong>Preise transparent<br />vergleichen.</strong><p>Quellen und Zeitstempel<br />folgen mit Live-Daten.</p></div></div><button className="nav-item settings" onClick={() => setDarkMode((current) => !current)} aria-label={darkMode ? "Zum hellen Modus wechseln" : "Zum dunklen Modus wechseln"}>{darkMode ? <Sun size={18} /> : <Moon size={18} />}{darkMode ? "Helles Design" : "Dunkles Design"}<span className={`theme-switch ${darkMode ? "on" : ""}`}><i /></span></button><div className="profile"><div className="avatar">P</div><div><strong>Paul</strong><span>Mein Sparwache</span></div><MoreHorizontal size={19} className="profile-more" /></div></div>
       </aside>
 
       <section className="main-area">
@@ -283,7 +290,7 @@ export default function Home() {
 
           {Object.keys(productOffers).length > 0 && <section className="live-offers-panel" aria-label="Live-Angebote von eBay"><div className="tracked-heading"><div><strong>Live-Angebote von eBay</strong><span>Aktuelle Treffer aus der eBay-Browse-API, inklusive Zeitstempel.</span></div><span className={`local-badge ${sandboxMode ? "sandbox-badge" : ""}`}>{sandboxMode ? "SANDBOX" : "LIVE"}</span></div>{Object.entries(productOffers).map(([productId, productOfferList]) => <div key={productId} className="live-product-offers"><strong>{trackedProducts.find((product) => product.id === productId)?.title || trackedProducts.find((product) => product.id === productId)?.shop}</strong>{productOfferList.map((offer) => <div className="live-offer-row" key={offer.id}><div><a href={offer.url} target="_blank" rel="noreferrer">{offer.title}</a><span>{offer.seller} · {new Date(offer.observedAt).toLocaleString("de-DE")}</span></div><strong>{(offer.itemPriceCents / 100).toLocaleString("de-DE", { style: "currency", currency: offer.currency })}<small>{offer.shippingCents === null ? "Versand nicht angegeben" : ` + ${(offer.shippingCents / 100).toLocaleString("de-DE", { style: "currency", currency: offer.currency })} Versand`}</small></strong></div>)}</div>)}</section>}
 
-          {trackedProducts.length > 0 && <section className="tracked-links" aria-label="Vorgemerkte Produktlinks"><div className="tracked-heading"><div><strong>Vorgemerkte Produktlinks</strong><span>Auf diesem PreisPilot-Server gespeichert.</span></div><span className="local-badge"><Check size={12} /> SQLite</span></div>{trackedProducts.map((product) => {
+          {trackedProducts.length > 0 && <section className="tracked-links" aria-label="Vorgemerkte Produktlinks"><div className="tracked-heading"><div><strong>Vorgemerkte Produktlinks</strong><span>Auf diesem Sparwache-Server gespeichert.</span></div><span className="local-badge"><Check size={12} /> SQLite</span></div>{trackedProducts.map((product) => {
             const observation = latestPrices[product.id];
             const totalPriceCents = observation ? observation.amountCents + observation.shippingCents : null;
             const targetReached = product.targetPriceCents !== null && totalPriceCents !== null && totalPriceCents <= product.targetPriceCents;
@@ -299,11 +306,11 @@ export default function Home() {
           <article className="offers-card"><div className="offers-heading"><div><h3>Preisvergleich · Demo</h3><p>Beispielangebote, noch keine Händlerabfrage.</p></div><button className="help-button" aria-label="Information"><CircleHelp size={17} /></button></div><div className="best-banner"><div className="best-banner-icon"><Sparkles size={16} /></div><div><strong>Beispiel für den günstigsten Vergleichspreis</strong><span>Live-Preise werden nach Anbindung zulässiger Quellen angezeigt.</span></div></div><div className="offer-list">{offers.map((offer) => <div className={`offer-row ${offer.best ? "best-offer" : ""}`} key={offer.name}><div className={`merchant-logo ${offer.tone}`}>{offer.initials}</div><div className="merchant-detail"><strong>{offer.name}{offer.best && <span className="best-label">BEISPIEL</span>}</strong><span>{offer.shipping}</span></div><div className="offer-price"><strong>{offer.price}</strong><span>{offer.delivery}</span></div><a className="offer-link" href="#angebote" aria-label={`${offer.name} öffnen`}><ExternalLink size={15} /></a></div>)}</div><div className="offers-footer"><span><ShieldCheck size={14} /> Beispieldaten ohne Live-Status</span><button>Alle Angebote <ArrowRight size={14} /></button></div></article></div>
 
           <div className="bottom-note"><span><ShieldCheck size={15} /></span><p><strong>Transparenz ist uns wichtig.</strong> Diese Ansicht zeigt Beispieldaten. Echte Quellen und Abrufzeitpunkte erscheinen, sobald die Preisabfragen angebunden sind.</p><button aria-label="Mehr erfahren"><CircleHelp size={16} /></button></div>
-          <footer>© 2026 PreisPilot <span>·</span> Preise clever im Blick <a href="#">Datenschutz</a><a href="#">Impressum</a></footer>
+          <footer>© 2026 Sparwache <span>·</span> Preise clever im Blick <a href="#">Datenschutz</a><a href="#">Impressum</a></footer>
         </div>
       </section>
 
-        {showAdd && <div className="modal-backdrop" onClick={(event) => { if (event.target === event.currentTarget) setShowAdd(false); }}><section className="add-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" onClick={() => setShowAdd(false)} aria-label="Schließen"><X size={19} /></button><div className="modal-icon"><Link2 size={21} /></div><div className="eyebrow">NEUES PRODUKT</div><h2 id="modal-title">Was möchtest du beobachten?</h2><p>Füge einen Produktlink ein. PreisPilot merkt sich das Produkt für deinen Preisvergleich.</p><form onSubmit={addProduct}><label htmlFor="product-url">Produktlink</label><div className="input-wrap"><Link2 size={17} /><input id="product-url" type="url" required placeholder="https://www.amazon.de/dp/…" value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></div><label htmlFor="product-title">Produktname für genaueren Vergleich (optional)</label><div className="input-wrap"><Package size={17} /><input id="product-title" type="text" maxLength={160} placeholder="z. B. iPhone 16 Pro 128 GB" value={productTitle} onChange={(event) => setProductTitle(event.target.value)} /></div><div className="supported-sites"><span>Beliebte Shops</span><b>amazon</b><b>MediaMarkt</b><b>OTTO</b></div><button className="primary-button submit-button" type="submit"><Search size={16} />Produkt vormerken <ArrowRight size={15} /></button></form><div className="modal-foot"><ShieldCheck size={15} /> Link wird in der lokalen SQLite-Datenbank gespeichert.</div></section></div>}
+        {showAdd && <div className="modal-backdrop" onClick={(event) => { if (event.target === event.currentTarget) setShowAdd(false); }}><section className="add-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" onClick={() => setShowAdd(false)} aria-label="Schließen"><X size={19} /></button><div className="modal-icon"><Link2 size={21} /></div><div className="eyebrow">NEUES PRODUKT</div><h2 id="modal-title">Was möchtest du beobachten?</h2><p>Füge einen Produktlink ein. Sparwache merkt sich das Produkt für deinen Preisvergleich.</p><form onSubmit={addProduct}><label htmlFor="product-url">Produktlink</label><div className="input-wrap"><Link2 size={17} /><input id="product-url" type="url" required placeholder="https://www.amazon.de/dp/…" value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></div><label htmlFor="product-title">Produktname für genaueren Vergleich (optional)</label><div className="input-wrap"><Package size={17} /><input id="product-title" type="text" maxLength={160} placeholder="z. B. iPhone 16 Pro 128 GB" value={productTitle} onChange={(event) => setProductTitle(event.target.value)} /></div><div className="supported-sites"><span>Beliebte Shops</span><b>amazon</b><b>MediaMarkt</b><b>OTTO</b></div><button className="primary-button submit-button" type="submit"><Search size={16} />Produkt vormerken <ArrowRight size={15} /></button></form><div className="modal-foot"><ShieldCheck size={15} /> Link wird in der lokalen SQLite-Datenbank gespeichert.</div></section></div>}
     </main>
   );
 }

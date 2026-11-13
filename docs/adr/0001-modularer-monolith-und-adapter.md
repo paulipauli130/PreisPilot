@@ -5,7 +5,7 @@
 
 ## Kontext
 
-PreisPilot muss mehrere heterogene Preis- und Produktdatenquellen verarbeiten. Gleichzeitig soll die erste Version übersichtlich zu entwickeln und günstig zu betreiben sein.
+Sparwache muss mehrere heterogene Preis- und Produktdatenquellen verarbeiten. Gleichzeitig soll die erste Version übersichtlich zu entwickeln und günstig zu betreiben sein.
 
 ## Entscheidung
 

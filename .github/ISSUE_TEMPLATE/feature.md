@@ -1,6 +1,6 @@
 ---
 name: Funktionsidee
-about: Beschreibe eine neue Funktion für PreisPilot
+about: Beschreibe eine neue Funktion für Sparwache
 title: "[Funktion] "
 labels: enhancement
 ---

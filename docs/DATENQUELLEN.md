@@ -2,7 +2,7 @@
 
 ## Grundsatz
 
-„Kostenlos“ bedeutet nicht automatisch „frei nutzbar“. Jede Quelle wird vor dem Einsatz auf Nutzungsbedingungen, Zulässigkeit des Abrufs, Rate Limits, Datenumfang und Aktualität geprüft. PreisPilot führt keine automatisierten Abrufe über Seiten aus, die dies nicht erlauben.
+„Kostenlos“ bedeutet nicht automatisch „frei nutzbar“. Jede Quelle wird vor dem Einsatz auf Nutzungsbedingungen, Zulässigkeit des Abrufs, Rate Limits, Datenumfang und Aktualität geprüft. Sparwache führt keine automatisierten Abrufe über Seiten aus, die dies nicht erlauben.
 
 ## Vorgesehene Quellen
 
@@ -17,7 +17,7 @@
 
 ## Idealo und Geizhals
 
-Idealo und Geizhals sind wichtige Vergleichsziele. Die Anbindung erfolgt ausschließlich über einen schriftlich oder technisch freigegebenen Weg. Bis eine passende Schnittstelle verfügbar ist, zeigt PreisPilot keinen als vollständig behaupteten Marktvergleich an.
+Idealo und Geizhals sind wichtige Vergleichsziele. Die Anbindung erfolgt ausschließlich über einen schriftlich oder technisch freigegebenen Weg. Bis eine passende Schnittstelle verfügbar ist, zeigt Sparwache keinen als vollständig behaupteten Marktvergleich an.
 
 ## eBay Browse API
 
