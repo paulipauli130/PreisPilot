@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ArrowDownRight, ArrowRight, Bell, Check, ChevronDown, CircleHelp, ExternalLink, LayoutDashboard, Link2, Menu, Moon, MoreHorizontal, Package, Plus, Search, ShieldCheck, Sparkles, Sun, TrendingDown, X } from "lucide-react";
 
@@ -16,8 +16,9 @@ const offers = [
   { name: "Apple Store", initials: "●", tone: "apple", price: "999,00 €", shipping: "Kostenloser Versand", delivery: "1–2 Tage", best: false },
 ];
 
-type TrackedProduct = { id: string; url: string; shop: string; createdAt: string; targetPriceCents: number | null };
+type TrackedProduct = { id: string; url: string; shop: string; title: string | null; createdAt: string; targetPriceCents: number | null; lastCheckedAt: string | null; lastRefreshError: string | null };
 type PriceObservation = { id: string; amountCents: number; shippingCents: number; source: string; observedAt: string };
+type LiveOffer = { id: string; provider: string; title: string; seller: string; url: string; itemPriceCents: number; shippingCents: number | null; currency: string; availability: string | null; observedAt: string };
 
 export default function Home() {
   const [showAdd, setShowAdd] = useState(false);
@@ -37,6 +38,12 @@ export default function Home() {
   const [visibleHistoryId, setVisibleHistoryId] = useState<string | null>(null);
   const [targetProductId, setTargetProductId] = useState<string | null>(null);
   const [productTargetInput, setProductTargetInput] = useState("");
+  const [productTitle, setProductTitle] = useState("");
+  const [pricingConfigured, setPricingConfigured] = useState(false);
+  const [sandboxMode, setSandboxMode] = useState(false);
+  const [refreshingIds, setRefreshingIds] = useState<Set<string>>(() => new Set());
+  const [productOffers, setProductOffers] = useState<Record<string, LiveOffer[]>>({});
+  const initialRefreshStarted = useRef(false);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("preispilot-theme");
@@ -48,6 +55,35 @@ export default function Home() {
     document.documentElement.dataset.theme = darkMode ? "dark" : "light";
     window.localStorage.setItem("preispilot-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
+
+  const refreshProduct = useCallback(async (productId: string, quiet = false) => {
+    setRefreshingIds((ids) => new Set(ids).add(productId));
+    try {
+      const response = await fetch(`/api/products/${encodeURIComponent(productId)}/refresh`, { method: "POST" });
+      const result = (await response.json()) as { product?: TrackedProduct; offers?: LiveOffer[]; bestOffer?: LiveOffer | null; observedAt?: string; error?: string };
+      if (!response.ok || !result.product) throw new Error(result.error ?? "Preise konnten nicht abgerufen werden.");
+      setTrackedProducts((products) => products.map((product) => product.id === productId ? result.product! : product));
+      setProductOffers((current) => ({ ...current, [productId]: result.offers ?? [] }));
+      if (result.bestOffer && result.bestOffer.shippingCents !== null) {
+        const observation: PriceObservation = {
+          id: `${productId}-${result.bestOffer.observedAt}`,
+          amountCents: result.bestOffer.itemPriceCents,
+          shippingCents: result.bestOffer.shippingCents,
+          source: `eBay · ${result.bestOffer.seller}`,
+          observedAt: result.observedAt ?? new Date().toISOString(),
+        };
+        setLatestPrices((prices) => ({ ...prices, [productId]: observation }));
+        setPriceHistories((histories) => histories[productId] ? { ...histories, [productId]: [observation, ...histories[productId]] } : histories);
+      }
+      if (!quiet) setNotice(`${result.offers?.length ?? 0} eBay-Angebote aktualisiert.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Preise konnten nicht abgerufen werden.";
+      if (!quiet) setNotice(message);
+      else console.info(`Preisaktualisierung für ${productId} nicht möglich: ${message}`);
+    } finally {
+      setRefreshingIds((ids) => { const next = new Set(ids); next.delete(productId); return next; });
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -62,6 +98,10 @@ export default function Home() {
         const response = await fetch("/api/products");
         if (!response.ok) throw new Error("Produkte konnten nicht geladen werden.");
         const result = (await response.json()) as { products: TrackedProduct[] };
+        const statusResponse = await fetch("/api/pricing/status");
+        const pricingStatus = statusResponse.ok ? await statusResponse.json() as { configured?: boolean; sandbox?: boolean } : {};
+        setPricingConfigured(Boolean(pricingStatus.configured));
+        setSandboxMode(Boolean(pricingStatus.sandbox));
         if (active) {
           setTrackedProducts(result.products);
           const histories = await Promise.all(result.products.map(async (product) => {
@@ -71,6 +111,18 @@ export default function Home() {
             return historyResult.observations[0] ? [product.id, historyResult.observations[0]] as const : null;
           }));
           setLatestPrices(Object.fromEntries(histories.filter((entry): entry is readonly [string, PriceObservation] => entry !== null)));
+          const offerResults = await Promise.all(result.products.filter((product) => product.lastCheckedAt).map(async (product) => {
+            const offerResponse = await fetch(`/api/products/${encodeURIComponent(product.id)}/offers`);
+            if (!offerResponse.ok) return null;
+            const offerResult = await offerResponse.json() as { offers: LiveOffer[] };
+            return [product.id, offerResult.offers] as const;
+          }));
+          setProductOffers(Object.fromEntries(offerResults.filter((entry): entry is readonly [string, LiveOffer[]] => entry !== null)));
+          if (pricingStatus.configured && !initialRefreshStarted.current) {
+            initialRefreshStarted.current = true;
+            const staleProducts = result.products.filter((product) => !product.lastCheckedAt || Date.now() - new Date(product.lastCheckedAt).getTime() > 60 * 60 * 1000);
+            void (async () => { for (const product of staleProducts) await refreshProduct(product.id, true); })();
+          }
         }
         window.localStorage.removeItem("preispilot-products");
       } catch {
@@ -86,7 +138,7 @@ export default function Home() {
     }
     void loadProducts();
     return () => { active = false; };
-  }, []);
+  }, [refreshProduct]);
 
   useEffect(() => {
     if (productsLoaded) window.localStorage.setItem("preispilot-target-price", targetPrice);
@@ -98,17 +150,27 @@ export default function Home() {
     try {
       const parsedUrl = new URL(url.trim());
       if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error("Ungültiges Protokoll");
-      const response = await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: parsedUrl.toString() }) });
+      const response = await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: parsedUrl.toString(), title: productTitle }) });
       const result = (await response.json()) as { product?: TrackedProduct; error?: string };
       if (!response.ok || !result.product) throw new Error(result.error ?? "Produkt konnte nicht gespeichert werden.");
       setTrackedProducts((products) => [result.product!, ...products]);
-      setNotice("Produktlink wurde in deiner lokalen Datenbank gespeichert. Eine Preisabfrage folgt später.");
+      setNotice(pricingConfigured ? "Produkt gespeichert. Preisabruf wird gestartet." : "Produkt gespeichert. Für Live-Preise fehlen noch eBay-API-Zugangsdaten.");
+      if (pricingConfigured) void refreshProduct(result.product.id, true);
       setUrl("");
+      setProductTitle("");
       setShowAdd(false);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Produkt konnte nicht gespeichert werden.");
     }
   }
+
+  useEffect(() => {
+    if (!productsLoaded || !pricingConfigured) return;
+    const interval = window.setInterval(() => {
+      for (const product of trackedProducts) void refreshProduct(product.id, true);
+    }, 60 * 60 * 1000);
+    return () => window.clearInterval(interval);
+  }, [productsLoaded, pricingConfigured, trackedProducts, refreshProduct]);
 
   async function removeProduct(id: string) {
     try {
@@ -216,7 +278,10 @@ export default function Home() {
           {notice && <div className="notice"><Check size={17} />{notice}<button onClick={() => setNotice("")} aria-label="Meldung schließen"><X size={16} /></button></div>}
           <div className="summary-grid"><article className="summary-card"><div className="summary-top"><span>Produkte im Blick</span><span className="summary-icon blue"><Package size={17} /></span></div><div className="summary-value">{String(trackedProducts.length + 4).padStart(2, "0")} <small>Produkte</small></div><div className="summary-foot"><span className="mini-dots"><i /><i /><i /><i /></span> Davon 2 mit Preisalarm</div></article><article className="summary-card"><div className="summary-top"><span>Gesamtersparnis</span><span className="summary-icon green"><ArrowDownRight size={18} /></span></div><div className="summary-value">128,50 <small>€</small></div><div className="summary-foot positive"><TrendingDown size={14} /> Im Vergleich zum Startpreis</div></article><article className="summary-card"><div className="summary-top"><span>Beste Gelegenheit</span><span className="summary-icon amber"><Sparkles size={17} /></span></div><div className="summary-value opportunity">iPhone 16 Pro</div><div className="summary-foot"><span className="deal-dot" /> 70 € unter dem 30-Tage-Schnitt</div></article></div>
 
-          <div className="section-heading" id="produkte"><div><h2>Deine Preisbeobachtungen</h2><p>Deine Produkte und ihre Entwicklung auf einen Blick.</p></div><button className="text-button">Alle Produkte <ArrowRight size={15} /></button></div>
+          <div className="section-heading" id="produkte"><div><h2>Deine Preisbeobachtungen</h2><p>Deine Produkte und ihre Entwicklung auf einen Blick.</p></div><div className="section-actions"><button className="record-price-button" onClick={() => { if (!pricingConfigured) { setNotice("Für Live-Abrufe EBAY_CLIENT_ID und EBAY_CLIENT_SECRET in .env eintragen. eBay verlangt zusätzlich die Produktionsfreigabe für die Browse API."); return; } for (const product of trackedProducts) void refreshProduct(product.id); }} disabled={refreshingIds.size > 0}>{refreshingIds.size ? "Preise werden abgerufen …" : "Preise jetzt abrufen"}</button><button className="text-button">Alle Produkte <ArrowRight size={15} /></button></div></div>
+          {!pricingConfigured && <div className="integration-notice">Live-Preisabruf benötigt eBay-API-Schlüssel und Produktionsfreigabe. Beispieldaten bleiben davon getrennt.</div>}
+
+          {Object.keys(productOffers).length > 0 && <section className="live-offers-panel" aria-label="Live-Angebote von eBay"><div className="tracked-heading"><div><strong>Live-Angebote von eBay</strong><span>Aktuelle Treffer aus der eBay-Browse-API, inklusive Zeitstempel.</span></div><span className={`local-badge ${sandboxMode ? "sandbox-badge" : ""}`}>{sandboxMode ? "SANDBOX" : "LIVE"}</span></div>{Object.entries(productOffers).map(([productId, productOfferList]) => <div key={productId} className="live-product-offers"><strong>{trackedProducts.find((product) => product.id === productId)?.title || trackedProducts.find((product) => product.id === productId)?.shop}</strong>{productOfferList.map((offer) => <div className="live-offer-row" key={offer.id}><div><a href={offer.url} target="_blank" rel="noreferrer">{offer.title}</a><span>{offer.seller} · {new Date(offer.observedAt).toLocaleString("de-DE")}</span></div><strong>{(offer.itemPriceCents / 100).toLocaleString("de-DE", { style: "currency", currency: offer.currency })}<small>{offer.shippingCents === null ? "Versand nicht angegeben" : ` + ${(offer.shippingCents / 100).toLocaleString("de-DE", { style: "currency", currency: offer.currency })} Versand`}</small></strong></div>)}</div>)}</section>}
 
           {trackedProducts.length > 0 && <section className="tracked-links" aria-label="Vorgemerkte Produktlinks"><div className="tracked-heading"><div><strong>Vorgemerkte Produktlinks</strong><span>Auf diesem PreisPilot-Server gespeichert.</span></div><span className="local-badge"><Check size={12} /> SQLite</span></div>{trackedProducts.map((product) => {
             const observation = latestPrices[product.id];
@@ -238,7 +303,7 @@ export default function Home() {
         </div>
       </section>
 
-      {showAdd && <div className="modal-backdrop" onClick={(event) => { if (event.target === event.currentTarget) setShowAdd(false); }}><section className="add-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" onClick={() => setShowAdd(false)} aria-label="Schließen"><X size={19} /></button><div className="modal-icon"><Link2 size={21} /></div><div className="eyebrow">NEUES PRODUKT</div><h2 id="modal-title">Was möchtest du beobachten?</h2><p>Füge einen Produktlink ein. PreisPilot merkt sich das Produkt für deinen Preisvergleich.</p><form onSubmit={addProduct}><label htmlFor="product-url">Produktlink</label><div className="input-wrap"><Link2 size={17} /><input id="product-url" type="url" required placeholder="https://www.amazon.de/dp/…" value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></div><div className="supported-sites"><span>Beliebte Shops</span><b>amazon</b><b>MediaMarkt</b><b>OTTO</b></div><button className="primary-button submit-button" type="submit"><Search size={16} />Produkt vormerken <ArrowRight size={15} /></button></form><div className="modal-foot"><ShieldCheck size={15} /> Link wird in der lokalen SQLite-Datenbank gespeichert.</div></section></div>}
+        {showAdd && <div className="modal-backdrop" onClick={(event) => { if (event.target === event.currentTarget) setShowAdd(false); }}><section className="add-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" onClick={() => setShowAdd(false)} aria-label="Schließen"><X size={19} /></button><div className="modal-icon"><Link2 size={21} /></div><div className="eyebrow">NEUES PRODUKT</div><h2 id="modal-title">Was möchtest du beobachten?</h2><p>Füge einen Produktlink ein. PreisPilot merkt sich das Produkt für deinen Preisvergleich.</p><form onSubmit={addProduct}><label htmlFor="product-url">Produktlink</label><div className="input-wrap"><Link2 size={17} /><input id="product-url" type="url" required placeholder="https://www.amazon.de/dp/…" value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></div><label htmlFor="product-title">Produktname für genaueren Vergleich (optional)</label><div className="input-wrap"><Package size={17} /><input id="product-title" type="text" maxLength={160} placeholder="z. B. iPhone 16 Pro 128 GB" value={productTitle} onChange={(event) => setProductTitle(event.target.value)} /></div><div className="supported-sites"><span>Beliebte Shops</span><b>amazon</b><b>MediaMarkt</b><b>OTTO</b></div><button className="primary-button submit-button" type="submit"><Search size={16} />Produkt vormerken <ArrowRight size={15} /></button></form><div className="modal-foot"><ShieldCheck size={15} /> Link wird in der lokalen SQLite-Datenbank gespeichert.</div></section></div>}
     </main>
   );
 }

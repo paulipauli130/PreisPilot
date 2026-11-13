@@ -122,6 +122,17 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
 .tracked-history-heading span { color: var(--muted); font-size: 8px; }
 .tracked-chart { height: 145px; margin-top: 6px; }
 .tracked-history-empty { margin: 8px 0 0; color: var(--muted); font-size: 9px; }
+.section-actions { display: flex; align-items: center; gap: 12px; }
+.integration-notice { margin: -15px 0 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: var(--surface); font-size: 9px; }
+.live-offers-panel { margin: -2px 0 16px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.sandbox-badge { color: #9a6a19; background: #fff0ce; }
+.live-product-offers { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 7px; }
+.live-product-offers > strong { display: block; margin-bottom: 4px; font-size: 9px; }
+.live-offer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.live-offer-row > div { min-width: 0; }
+.live-offer-row a { display: block; overflow: hidden; color: var(--ink); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.live-offer-row span, .live-offer-row small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; }
+.live-offer-row > strong { flex: 0 0 auto; text-align: right; font-size: 10px; }
 .price-entry-form { display: flex; align-items: flex-end; gap: 8px; padding: 0 0 10px 36px; }
 .price-entry-form label { flex: 1; min-width: 90px; color: var(--muted); font-size: 8px; }
 .price-entry-form input { display: block; width: 100%; margin-top: 4px; padding: 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--surface); font: 500 10px 'DM Sans', sans-serif; }
@@ -139,4 +150,7 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
   .price-entry-form { flex-wrap: wrap; padding-left: 0; }
   .price-entry-form label { flex: 1 1 28%; }
   .tracked-history { padding-left: 0; }
+  .section-heading { align-items: flex-start; }
+  .section-actions { align-items: flex-end; flex-direction: column; gap: 5px; }
+  .integration-notice { line-height: 1.5; }
 }

@@ -1,8 +1,20 @@
 # PreisPilot
 
+<p align="center">
+  <img src="public/preispilot-logo.svg" alt="PreisPilot – Preise im Blick" width="420" />
+</p>
+
+<p align="center"><strong>Preise im Blick. Gute Käufe im Gefühl.</strong><br />Ein deutschsprachiger Preisvergleich und Preisverlauf-Tracker für deine Produkte.</p>
+
+<p align="center">
+  <a href="docs/ROADMAP.md">Roadmap</a> · <a href="docs/DATENQUELLEN.md">Datenquellen</a> · <a href="CONTRIBUTING.md">Mitmachen</a> · <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+---
+
 **PreisPilot** ist ein deutschsprachiger, transparenter Preisvergleichs- und Preisverlauf-Tracker für Produkte im deutschen Markt.
 
-> Status: frühe Web-App mit interaktivem Dashboard, lokaler Produktverwaltung über API und SQLite. Preise und Händlerangebote sind ausdrücklich als Demo gekennzeichnet; produktive Preisabfragen folgen.
+> Status: frühe Web-App mit interaktivem Dashboard, SQLite-Produktverwaltung und vorbereitetem eBay-Liveadapter. Live-Abrufe benötigen gültige eBay-API-Zugangsdaten und Produktionsfreigabe; ohne diese werden keine Livepreise vorgetäuscht.
 
 ## Zielbild
 
@@ -24,7 +36,7 @@ docs/          Produkt-, Architektur- und Entscheidungsdokumentation
   adr/         Architekturentscheidungen
 ```
 
-Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen Hell-/Dunkelmodus und einen lokal gespeicherten Demo-Wunschpreis. Produktlinks werden über die API in SQLite gespeichert und können entfernt werden. Für jeden gespeicherten Link lassen sich Artikelpreis, Versand, Quelle und Zeitpunkt manuell als Preisbeobachtung erfassen; der letzte erfasste Gesamtpreis wird am Link angezeigt und der Verlauf lässt sich als Diagramm öffnen. Zusätzlich kann pro Produkt ein Wunschpreis gespeichert werden. Liegt eine manuell erfasste Preisnotiz inklusive Versand darunter, markiert PreisPilot den erreichten Preisalarm. E-Mail-, Push- und automatische Händlerbenachrichtigungen gibt es noch nicht. Das zentrale Dashboard-Diagramm und Händlerangebote enthalten weiterhin klar gekennzeichnete Beispieldaten. Durch das mobile Layout ist die App auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+Die Anwendung ist eine responsive Web-App mit Next.js und TypeScript. Produktlinks werden über die API in SQLite gespeichert; Nutzer können optional einen präzisen Produktnamen ergänzen. Mit eBay-Zugangsdaten fragt der Server beim Hinzufügen, beim Öffnen für veraltete Produkte und danach stündlich aktuelle eBay-Angebote ab. Der Server speichert Angebot, Händler, Preis, Versand und Abrufzeitpunkt. Preisbeobachtungen lassen sich außerdem manuell erfassen und als Verlauf ansehen. Das zentrale Dashboard-Diagramm enthält weiterhin Beispieldaten. Wunschpreise werden je Produkt gespeichert; E-Mail- und Push-Alarme sind noch nicht verfügbar. Das mobile Layout und der Hell-/Dunkelmodus sind vorbereitet. Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 
 ## Lokal starten
 
@@ -38,7 +50,7 @@ npm.cmd run db:migrate
 npm.cmd run dev
 ```
 
-Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Produktlinks werden auf dem lokalen Server gespeichert; das Dashboard zeigt weiter gekennzeichnete Beispieldaten für Preise, Angebote und Verlauf. Für einen Produktionsbuild: `npm.cmd run build`.
+Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Für eBay-Liveangebote trage `EBAY_CLIENT_ID` und `EBAY_CLIENT_SECRET` aus deiner eBay-Developer-App in `.env` ein und starte den Server neu. `EBAY_SANDBOX="false"` wählt die Produktionsumgebung; dafür muss eBay deine Anwendung für die Browse API freigeschaltet haben. Optional setzt `EBAY_POSTAL_CODE` einen Lieferort zur Versandschätzung. Ohne Schlüssel bleibt der Adapter deaktiviert. Für einen Produktionsbuild: `npm.cmd run build`.
 
 Die Datenbankverbindung steht in `.env`; als Vorlage dient [.env.example](.env.example). Prisma speichert die lokale SQLite-Datenbank in `prisma/preispilot.db`. `db:migrate` bereitet die lokale Datei vor und wendet eingecheckte Migrationen an. `db:deploy` wendet Migrationen ohne Entwicklungsmodus an. Der Entwicklungsserver schreibt nach `.next-development`, der Produktionsbuild nach `.next`; so überschreibt ein Build während der Entwicklung keine laufenden Browser-Assets.
 

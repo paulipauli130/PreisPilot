@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { inferSearchTitle } from "@/lib/pricing/ebay";
 
 export const runtime = "nodejs";
 
@@ -36,8 +37,10 @@ export async function POST(request: Request) {
   }
 
   const shop = productUrl.hostname.replace(/^www\./, "").split(".").slice(0, -1).join(".") || productUrl.hostname;
+  const title = "title" in body && typeof body.title === "string" ? body.title.trim() : "";
+  if (title.length > 160) return NextResponse.json({ error: "Die Produktbezeichnung darf höchstens 160 Zeichen lang sein." }, { status: 400 });
   try {
-    const product = await prisma.product.create({ data: { url: productUrl.href, shop } });
+    const product = await prisma.product.create({ data: { url: productUrl.href, shop, title: title || inferSearchTitle(productUrl.href) } });
     return NextResponse.json({ product }, { status: 201 });
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {

@@ -8,6 +8,10 @@ Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1
 
 ### Hinzugefügt
 
+- eBay-Browse-API-Adapter mit OAuth, Angebotsvergleich, gespeicherten Händlerangeboten und manuellem sowie stündlichem Abruf (benötigt eBay-Produktionsfreigabe und Zugangsdaten).
+- Statusanzeige für eBay-Zugang, Fehlerstatus pro Produkt und optionales Produktnamensfeld für bessere Suchtreffer.
+- Datenschutz: API-Schlüssel bleiben in lokalen Umgebungsvariablen und werden nie an den Browser ausgeliefert.
+
 - Manuelle Preisbeobachtungen für gespeicherte Produktlinks mit Artikelpreis, Versandkosten und frei benennbarer Quelle.
 - Letzten erfassten Gesamtpreis samt Quelle und Zeitpunkt in der Produktlink-Liste anzeigen.
 - Preisbeobachtungen beim Laden der Produktliste abrufen und nach dem Speichern direkt aktualisieren.
@@ -37,6 +41,6 @@ Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1
 ### Noch nicht enthalten
 
 - Das zentrale Dashboard-Diagramm und die Angebotsliste nutzen weiterhin Beispieldaten.
-- Preise, Angebote und Verlauf sind weiterhin Beispieldaten; Live-Abfragen sind noch nicht angebunden.
+- eBay-Livepreise sind ohne persönliche Zugangsdaten und eBay-Produktionsfreigabe nicht abrufbar; Demo-Daten bleiben als solche gekennzeichnet.
 - Wunschpreise lösen noch keine Benachrichtigung aus.
 - Anmeldung, Datenbank, echte Preisalarme und Händler-Integrationen stehen aus.

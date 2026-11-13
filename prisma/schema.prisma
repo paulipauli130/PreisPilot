@@ -13,11 +13,33 @@ model Product {
   shop        String
   title       String?
   targetPriceCents Int?
+  lastCheckedAt DateTime?
+  lastRefreshError String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   priceHistory PriceObservation[]
+  offers      ProductOffer[]
 
   @@index([createdAt])
+}
+
+model ProductOffer {
+  id              String   @id @default(cuid())
+  productId       String
+  provider        String
+  externalId      String
+  title           String
+  seller          String
+  url             String
+  itemPriceCents  Int
+  shippingCents   Int?
+  currency        String   @default("EUR")
+  availability    String?
+  observedAt      DateTime @default(now())
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, provider, externalId])
+  @@index([productId, provider, observedAt])
 }
 
 model PriceObservation {

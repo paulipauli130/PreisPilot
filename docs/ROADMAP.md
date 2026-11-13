@@ -23,13 +23,15 @@
 - [x] Preisbeobachtungen manuell je gespeichertem Produkt erfassen und letzten Gesamtpreis anzeigen
 - [x] Erfassten Preisverlauf pro Produkt grafisch darstellen
 - [x] Wunschpreis je Produkt speichern und bei manuell erfasstem Preisziel visuell markieren
+- [x] eBay-Browse-API Adapter, Angebotsdatenbank, Abrufstatus und Aktualisierung beim Hinzufügen/Öffnen ergänzen
+- [ ] eBay-Produktionszugang beantragen und echte Abrufe mit Zugangsdaten prüfen
 - [ ] Hintergrundaufgaben und Variantenmodell ergänzen
 - [ ] Deployment-Ziel auswählen und einrichten
 
 ## Phase 2 – Erstes nutzbares Produkt
 
 - Produkt manuell oder per Link anlegen
-- einen legal verfügbaren Quellen-Adapter implementieren
+- [x] ersten legal verfügbaren Quellen-Adapter implementieren (eBay; Freischaltung erforderlich)
 - Angebote vergleichen und Preisverlauf darstellen
 - Benachrichtigungsversand ergänzen (E-Mail oder Push)
 
