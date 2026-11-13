@@ -11,6 +11,10 @@ Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1
 - Manuelle Preisbeobachtungen für gespeicherte Produktlinks mit Artikelpreis, Versandkosten und frei benennbarer Quelle.
 - Letzten erfassten Gesamtpreis samt Quelle und Zeitpunkt in der Produktlink-Liste anzeigen.
 - Preisbeobachtungen beim Laden der Produktliste abrufen und nach dem Speichern direkt aktualisieren.
+- Aufklappbares Preisverlaufsdiagramm pro gespeichertem Produkt mit Gesamtpreis inklusive Versand.
+- Entwicklungs-Build-Ordner von `.next-dev` auf `.next-development` umgestellt und ESLint um generierte Entwicklungsdateien ergänzt.
+- Wunschpreis je Produkt in SQLite speichern und erreichen, sobald ein gespeicherter Gesamtpreis darunter fällt.
+- Datenbankmigration und API zum Setzen und Zurücksetzen des Produkt-Wunschpreises ergänzt.
 - Responsives deutschsprachiges Dashboard mit Produktübersicht, Preisvergleich und Preisverlaufsdiagramm.
 - Umschaltbarer Hell-/Dunkelmodus; die Auswahl wird im Browser gespeichert und berücksichtigt beim ersten Aufruf die Systemeinstellung.
 - Dialog zum Vormerken eines Produktlinks.

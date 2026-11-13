@@ -40,7 +40,7 @@ npm.cmd run build
 - Öffne die laufende Anwendung im Browser und prüfe die betroffenen Bereiche visuell. Bei Änderungen am Layout mindestens Dashboard und Produktlink-Dialog ansehen.
 - Prüfe den Hell- und Dunkelmodus sowie eine schmale/mobile Fensterbreite, wenn sich die Oberfläche ändert.
 - Kontrolliere die Browserkonsole auf Laufzeitfehler und verifiziere, dass Diagramme und Bedienelemente sichtbar sind.
-- Wenn du einen Produktionsbuild ausführst, läuft dessen Ausgabe getrennt vom Dev-Server (`.next` gegenüber `.next-dev`).
+- Wenn du einen Produktionsbuild ausführst, läuft dessen Ausgabe getrennt vom Dev-Server (`.next` gegenüber `.next-development`).
 
 ## Datenquellen
 

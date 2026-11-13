@@ -39,7 +39,7 @@ Die genauen Felder und Beziehungen werden vor dem Datenbankschema in einer separ
 
 ## Schnittstellenprinzip
 
-Die erste lokale API stellt Produktlinks unter `/api/products` bereit. Preis-Snapshots werden pro Produkt unter `/api/products/:id/prices` gelesen und angelegt. Preisbeträge werden als ganze Cent-Beträge gespeichert, damit Rundungsfehler vermieden werden.
+Die erste lokale API stellt Produktlinks unter `/api/products` bereit. `PATCH /api/products/:id` speichert oder entfernt einen Wunschpreis. Preis-Snapshots werden pro Produkt unter `/api/products/:id/prices` gelesen und angelegt. Preis- und Zielbeträge werden als ganze Cent-Beträge gespeichert, damit Rundungsfehler vermieden werden. Das UI markiert den Preisalarm, wenn der zuletzt erfasste Gesamtpreis (Artikel plus Versand) das Ziel erreicht. Diese Auswertung läuft beim Laden der Daten; ein Hintergrunddienst und externe Benachrichtigungen sind noch nicht eingerichtet.
 
 Quellen werden über eine einheitliche Adapter-Schnittstelle angebunden:
 

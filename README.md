@@ -24,7 +24,7 @@ docs/          Produkt-, Architektur- und Entscheidungsdokumentation
   adr/         Architekturentscheidungen
 ```
 
-Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen Hell-/Dunkelmodus und einen lokal gespeicherten Wunschpreis. Produktlinks werden über die API in SQLite gespeichert und können entfernt werden. Für jeden gespeicherten Link lassen sich Artikelpreis, Versand, Quelle und Zeitpunkt manuell als Preisbeobachtung erfassen; der letzte erfasste Gesamtpreis wird am Link angezeigt und der Verlauf ist per API abrufbar. Das Diagramm und Händlerangebote enthalten weiterhin klar gekennzeichnete Beispieldaten. Automatische Preisabfragen und Benachrichtigungen gibt es noch nicht. Durch das mobile Layout ist die App auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+Die Anwendung startet als responsive Web-App mit Next.js und TypeScript. Das Dashboard enthält einen Hell-/Dunkelmodus und einen lokal gespeicherten Demo-Wunschpreis. Produktlinks werden über die API in SQLite gespeichert und können entfernt werden. Für jeden gespeicherten Link lassen sich Artikelpreis, Versand, Quelle und Zeitpunkt manuell als Preisbeobachtung erfassen; der letzte erfasste Gesamtpreis wird am Link angezeigt und der Verlauf lässt sich als Diagramm öffnen. Zusätzlich kann pro Produkt ein Wunschpreis gespeichert werden. Liegt eine manuell erfasste Preisnotiz inklusive Versand darunter, markiert PreisPilot den erreichten Preisalarm. E-Mail-, Push- und automatische Händlerbenachrichtigungen gibt es noch nicht. Das zentrale Dashboard-Diagramm und Händlerangebote enthalten weiterhin klar gekennzeichnete Beispieldaten. Durch das mobile Layout ist die App auch auf dem Smartphone nutzbar; eine spätere PWA- oder App-Store-Version kann darauf aufbauen. Die Architekturdetails stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 
 ## Lokal starten
 
@@ -40,7 +40,7 @@ npm.cmd run dev
 
 Danach ist die Oberfläche unter http://localhost:3000 erreichbar. Produktlinks werden auf dem lokalen Server gespeichert; das Dashboard zeigt weiter gekennzeichnete Beispieldaten für Preise, Angebote und Verlauf. Für einen Produktionsbuild: `npm.cmd run build`.
 
-Die Datenbankverbindung steht in `.env`; als Vorlage dient [.env.example](.env.example). Prisma speichert die lokale SQLite-Datenbank in `prisma/preispilot.db`. `db:migrate` bereitet die lokale Datei vor und wendet eingecheckte Migrationen an. `db:deploy` wendet Migrationen ohne Entwicklungsmodus an. Entwicklungsserver und Produktionsbuild verwenden getrennte Ausgabeverzeichnisse, damit ein Build während der Entwicklung keine laufenden Browser-Assets überschreibt.
+Die Datenbankverbindung steht in `.env`; als Vorlage dient [.env.example](.env.example). Prisma speichert die lokale SQLite-Datenbank in `prisma/preispilot.db`. `db:migrate` bereitet die lokale Datei vor und wendet eingecheckte Migrationen an. `db:deploy` wendet Migrationen ohne Entwicklungsmodus an. Der Entwicklungsserver schreibt nach `.next-development`, der Produktionsbuild nach `.next`; so überschreibt ein Build während der Entwicklung keine laufenden Browser-Assets.
 
 ## Projektstand und Mitarbeit
 

@@ -112,7 +112,16 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
 .tracked-product { border-top: 1px solid var(--line); }
 .tracked-product .tracked-link { border-top: 0; }
 .tracked-info small { display: block; margin-top: 4px; color: var(--green); font-size: 8px; }
+.tracked-info .target-hit { color: var(--green); font-weight: 700; }
+.tracked-info .target-pending { color: var(--muted); }
 .tracked-link .record-price-button { display: block; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); font-size: 8px; white-space: nowrap; }
+.tracked-buttons { display: flex; flex-wrap: wrap; gap: 5px; }
+.tracked-link .record-price-button[aria-expanded="true"] { color: var(--green); border-color: var(--green); }
+.tracked-history { padding: 9px 0 11px 36px; }
+.tracked-history-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--ink); font-size: 9px; }
+.tracked-history-heading span { color: var(--muted); font-size: 8px; }
+.tracked-chart { height: 145px; margin-top: 6px; }
+.tracked-history-empty { margin: 8px 0 0; color: var(--muted); font-size: 9px; }
 .price-entry-form { display: flex; align-items: flex-end; gap: 8px; padding: 0 0 10px 36px; }
 .price-entry-form label { flex: 1; min-width: 90px; color: var(--muted); font-size: 8px; }
 .price-entry-form input { display: block; width: 100%; margin-top: 4px; padding: 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--surface); font: 500 10px 'DM Sans', sans-serif; }
@@ -129,4 +138,5 @@ html[data-theme="dark"] .notice { background: #20372a; border-color: #365b43; co
   .mobile-menu { position: relative; z-index: 21; }
   .price-entry-form { flex-wrap: wrap; padding-left: 0; }
   .price-entry-form label { flex: 1 1 28%; }
+  .tracked-history { padding-left: 0; }
 }

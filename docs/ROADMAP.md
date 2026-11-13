@@ -21,16 +21,17 @@
 - [x] Datenmodell und Migration für Produkte und Preisbeobachtungen anlegen
 - [x] API-Endpunkte für Preisverlauf-Snapshots ergänzen
 - [x] Preisbeobachtungen manuell je gespeichertem Produkt erfassen und letzten Gesamtpreis anzeigen
+- [x] Erfassten Preisverlauf pro Produkt grafisch darstellen
+- [x] Wunschpreis je Produkt speichern und bei manuell erfasstem Preisziel visuell markieren
 - [ ] Hintergrundaufgaben und Variantenmodell ergänzen
 - [ ] Deployment-Ziel auswählen und einrichten
 
 ## Phase 2 – Erstes nutzbares Produkt
 
 - Produkt manuell oder per Link anlegen
-- Preisverlauf aus gespeicherten Beobachtungen in der Produktansicht darstellen
 - einen legal verfügbaren Quellen-Adapter implementieren
 - Angebote vergleichen und Preisverlauf darstellen
-- Zielpreis und Benachrichtigungsregel speichern
+- Benachrichtigungsversand ergänzen (E-Mail oder Push)
 
 ## Laufende Qualität und Dokumentation
 

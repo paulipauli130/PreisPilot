@@ -16,7 +16,7 @@ const offers = [
   { name: "Apple Store", initials: "●", tone: "apple", price: "999,00 €", shipping: "Kostenloser Versand", delivery: "1–2 Tage", best: false },
 ];
 
-type TrackedProduct = { id: string; url: string; shop: string; createdAt: string };
+type TrackedProduct = { id: string; url: string; shop: string; createdAt: string; targetPriceCents: number | null };
 type PriceObservation = { id: string; amountCents: number; shippingCents: number; source: string; observedAt: string };
 
 export default function Home() {
@@ -33,6 +33,10 @@ export default function Home() {
   const [priceEntryId, setPriceEntryId] = useState<string | null>(null);
   const [priceInputs, setPriceInputs] = useState({ amount: "", shipping: "0", source: "Manuell beobachtet" });
   const [latestPrices, setLatestPrices] = useState<Record<string, PriceObservation>>({});
+  const [priceHistories, setPriceHistories] = useState<Record<string, PriceObservation[]>>({});
+  const [visibleHistoryId, setVisibleHistoryId] = useState<string | null>(null);
+  const [targetProductId, setTargetProductId] = useState<string | null>(null);
+  const [productTargetInput, setProductTargetInput] = useState("");
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("preispilot-theme");
@@ -112,8 +116,32 @@ export default function Home() {
       if (!response.ok) throw new Error("Produkt konnte nicht entfernt werden.");
       setTrackedProducts((products) => products.filter((product) => product.id !== id));
       setLatestPrices((prices) => { const next = { ...prices }; delete next[id]; return next; });
+      setPriceHistories((histories) => { const next = { ...histories }; delete next[id]; return next; });
+      if (visibleHistoryId === id) setVisibleHistoryId(null);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Produkt konnte nicht entfernt werden.");
+    }
+  }
+
+  async function saveProductTarget(event: React.FormEvent<HTMLFormElement>, productId: string) {
+    event.preventDefault();
+    const parsed = Number(productTargetInput.replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setNotice("Der Wunschpreis muss größer als null sein.");
+      return;
+    }
+    try {
+      const response = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetPriceCents: Math.round(parsed * 100) }),
+      });
+      const result = (await response.json()) as { product?: TrackedProduct; error?: string };
+      if (!response.ok || !result.product) throw new Error(result.error ?? "Wunschpreis konnte nicht gespeichert werden.");
+      setTrackedProducts((products) => products.map((product) => product.id === productId ? result.product! : product));
+      setTargetProductId(null);
+      setNotice("Wunschpreis wurde für dieses Produkt gespeichert.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Wunschpreis konnte nicht gespeichert werden.");
     }
   }
 
@@ -133,11 +161,31 @@ export default function Home() {
       const result = (await response.json()) as { observation?: PriceObservation; error?: string };
       if (!response.ok || !result.observation) throw new Error(result.error ?? "Preis konnte nicht gespeichert werden.");
       setLatestPrices((prices) => ({ ...prices, [productId]: result.observation! }));
+      setPriceHistories((histories) => histories[productId]
+        ? { ...histories, [productId]: [result.observation!, ...histories[productId]] }
+        : histories);
       setPriceEntryId(null);
       setPriceInputs({ amount: "", shipping: "0", source: "Manuell beobachtet" });
       setNotice("Preisbeobachtung wurde gespeichert.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Preis konnte nicht gespeichert werden.");
+    }
+  }
+
+  async function togglePriceHistory(productId: string) {
+    if (visibleHistoryId === productId) {
+      setVisibleHistoryId(null);
+      return;
+    }
+    setVisibleHistoryId(productId);
+    if (priceHistories[productId]) return;
+    try {
+      const response = await fetch(`/api/products/${encodeURIComponent(productId)}/prices`);
+      const result = (await response.json()) as { observations?: PriceObservation[]; error?: string };
+      if (!response.ok || !result.observations) throw new Error(result.error ?? "Preisverlauf konnte nicht geladen werden.");
+      setPriceHistories((histories) => ({ ...histories, [productId]: result.observations! }));
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Preisverlauf konnte nicht geladen werden.");
     }
   }
 
@@ -170,7 +218,12 @@ export default function Home() {
 
           <div className="section-heading" id="produkte"><div><h2>Deine Preisbeobachtungen</h2><p>Deine Produkte und ihre Entwicklung auf einen Blick.</p></div><button className="text-button">Alle Produkte <ArrowRight size={15} /></button></div>
 
-          {trackedProducts.length > 0 && <section className="tracked-links" aria-label="Vorgemerkte Produktlinks"><div className="tracked-heading"><div><strong>Vorgemerkte Produktlinks</strong><span>Auf diesem PreisPilot-Server gespeichert.</span></div><span className="local-badge"><Check size={12} /> SQLite</span></div>{trackedProducts.map((product) => <div className="tracked-product" key={product.id}><div className="tracked-link"><div className="tracked-icon"><Package size={16} /></div><div className="tracked-info"><strong>{product.shop}</strong><span title={product.url}>{product.url}</span>{latestPrices[product.id] && <small>Zuletzt {((latestPrices[product.id].amountCents + latestPrices[product.id].shippingCents) / 100).toLocaleString("de-DE", { style: "currency", currency: "EUR" })} · {latestPrices[product.id].source} · {new Date(latestPrices[product.id].observedAt).toLocaleString("de-DE")}</small>}</div><a href={product.url} target="_blank" rel="noreferrer" aria-label={`${product.shop} öffnen`}><ExternalLink size={15} /></a><button onClick={() => removeProduct(product.id)} aria-label={`${product.shop} entfernen`}><X size={15} /></button><button className="record-price-button" onClick={() => { setPriceEntryId(priceEntryId === product.id ? null : product.id); setNotice(""); }} aria-label={`Preis für ${product.shop} notieren`}>Preis notieren</button></div>{priceEntryId === product.id && <form className="price-entry-form" onSubmit={(event) => savePriceObservation(event, product.id)}><label>Artikelpreis (€)<input required type="number" min="0.01" step="0.01" value={priceInputs.amount} onChange={(event) => setPriceInputs({ ...priceInputs, amount: event.target.value })} /></label><label>Versand (€)<input required type="number" min="0" step="0.01" value={priceInputs.shipping} onChange={(event) => setPriceInputs({ ...priceInputs, shipping: event.target.value })} /></label><label>Quelle<input required maxLength={100} value={priceInputs.source} onChange={(event) => setPriceInputs({ ...priceInputs, source: event.target.value })} /></label><button className="primary-button" type="submit">Preis speichern</button></form>}</div>)}</section>}
+          {trackedProducts.length > 0 && <section className="tracked-links" aria-label="Vorgemerkte Produktlinks"><div className="tracked-heading"><div><strong>Vorgemerkte Produktlinks</strong><span>Auf diesem PreisPilot-Server gespeichert.</span></div><span className="local-badge"><Check size={12} /> SQLite</span></div>{trackedProducts.map((product) => {
+            const observation = latestPrices[product.id];
+            const totalPriceCents = observation ? observation.amountCents + observation.shippingCents : null;
+            const targetReached = product.targetPriceCents !== null && totalPriceCents !== null && totalPriceCents <= product.targetPriceCents;
+            return <div className="tracked-product" key={product.id}><div className="tracked-link"><div className="tracked-icon"><Package size={16} /></div><div className="tracked-info"><strong>{product.shop}</strong><span title={product.url}>{product.url}</span>{observation && <small>Zuletzt {(totalPriceCents! / 100).toLocaleString("de-DE", { style: "currency", currency: "EUR" })} · {observation.source} · {new Date(observation.observedAt).toLocaleString("de-DE")}</small>}{product.targetPriceCents !== null && <small className={targetReached ? "target-hit" : "target-pending"}>{targetReached ? "Preisalarm: Wunschpreis erreicht!" : `Wunschpreis: ${(product.targetPriceCents / 100).toLocaleString("de-DE", { style: "currency", currency: "EUR" })}`}</small>}</div><a href={product.url} target="_blank" rel="noreferrer" aria-label={`${product.shop} öffnen`}><ExternalLink size={15} /></a><button onClick={() => removeProduct(product.id)} aria-label={`${product.shop} entfernen`}><X size={15} /></button><div className="tracked-buttons"><button className="record-price-button" onClick={() => { setPriceEntryId(priceEntryId === product.id ? null : product.id); setNotice(""); }} aria-label={`Preis für ${product.shop} notieren`}>Preis notieren</button><button className="record-price-button" onClick={() => void togglePriceHistory(product.id)} aria-expanded={visibleHistoryId === product.id}>Verlauf</button><button className="record-price-button" onClick={() => { setProductTargetInput(product.targetPriceCents === null ? "" : (product.targetPriceCents / 100).toString()); setTargetProductId(targetProductId === product.id ? null : product.id); setNotice(""); }} aria-expanded={targetProductId === product.id}>Wunschpreis</button></div></div>{priceEntryId === product.id && <form className="price-entry-form" onSubmit={(event) => savePriceObservation(event, product.id)}><label>Artikelpreis (€)<input required type="number" min="0.01" step="0.01" value={priceInputs.amount} onChange={(event) => setPriceInputs({ ...priceInputs, amount: event.target.value })} /></label><label>Versand (€)<input required type="number" min="0" step="0.01" value={priceInputs.shipping} onChange={(event) => setPriceInputs({ ...priceInputs, shipping: event.target.value })} /></label><label>Quelle<input required maxLength={100} value={priceInputs.source} onChange={(event) => setPriceInputs({ ...priceInputs, source: event.target.value })} /></label><button className="primary-button" type="submit">Preis speichern</button></form>}{targetProductId === product.id && <form className="price-entry-form" onSubmit={(event) => saveProductTarget(event, product.id)}><label>Wunschpreis inklusive Versand (€)<input required type="number" min="0.01" step="0.01" value={productTargetInput} onChange={(event) => setProductTargetInput(event.target.value)} /></label><button className="primary-button" type="submit">Wunschpreis speichern</button></form>}{visibleHistoryId === product.id && <div className="tracked-history"><div className="tracked-history-heading"><strong>Erfasster Preisverlauf</strong><span>{priceHistories[product.id]?.length ?? 0} Beobachtungen · inklusive Versand</span></div>{priceHistories[product.id]?.length ? <div className="tracked-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={[...priceHistories[product.id]].reverse().map((item) => ({ tag: new Date(item.observedAt).toLocaleDateString("de-DE", { day: "2-digit", month: "short" }), preis: (item.amountCents + item.shippingCents) / 100, quelle: item.source }))} margin={{ top: 8, right: 10, left: 4, bottom: 0 }}><defs><linearGradient id={`trackedFill-${product.id}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#20a879" stopOpacity={0.18} /><stop offset="95%" stopColor="#20a879" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="3 5" /><XAxis dataKey="tag" axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 9 }} /><YAxis width={68} domain={["dataMin - 25", "dataMax + 25"]} axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 9 }} tickFormatter={(value) => `${Number(value).toLocaleString("de-DE")} €`} /><Tooltip formatter={(value, _name, item) => [`${Number(value).toLocaleString("de-DE", { minimumFractionDigits: 2 })} €`, item.payload.quelle]} contentStyle={{ borderRadius: 8, border: "1px solid var(--line)", background: "var(--surface)", color: "var(--ink)", fontSize: 11 }} /><Area type="monotone" dataKey="preis" stroke="#1ca477" strokeWidth={2} fill={`url(#trackedFill-${product.id})`} dot={{ r: 3 }} activeDot={{ r: 4, fill: "#1ca477", stroke: "white", strokeWidth: 2 }} /></AreaChart></ResponsiveContainer></div> : <p className="tracked-history-empty">Noch keine Preisnotizen vorhanden. Erfasse einen Preis, dann erscheint der Verlauf hier.</p>}</div>}</div>;
+          })}</section>}
 
           <div className="product-layout"><article className="product-card"><div className="product-head"><div className="product-title-wrap"><div className="product-image"><div className="phone"><span /></div></div><div><div className="product-kicker">SMARTPHONE · APPLE</div><h3>iPhone 16 Pro</h3><div className="product-variant">128 GB · Titan Natur</div></div></div><button className="dots-button" aria-label="Weitere Optionen"><MoreHorizontal size={19} /></button></div>
             <div className="price-row"><div><span className="muted-label">Bester Preis gerade</span><div className="big-price">929,00 <small>€</small></div></div><div className="savings-pill"><ArrowDownRight size={14} /> −70,00 €</div></div>

@@ -12,6 +12,7 @@ model Product {
   url         String            @unique
   shop        String
   title       String?
+  targetPriceCents Int?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   priceHistory PriceObservation[]
