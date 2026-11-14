@@ -24,8 +24,10 @@
 - [x] Erfassten Preisverlauf pro Produkt grafisch darstellen
 - [x] Wunschpreis je Produkt speichern und bei manuell erfasstem Preisziel visuell markieren
 - [x] eBay-Browse-API Adapter, Angebotsdatenbank, Abrufstatus und Aktualisierung beim Hinzufügen/Öffnen ergänzen
+- [x] Geschützten Abruf-Endpunkt und stündlichen GitHub-Actions-Scheduler für gehostete Installationen ergänzen
 - [ ] eBay-Produktionszugang beantragen und echte Abrufe mit Zugangsdaten prüfen
-- [ ] Hintergrundaufgaben und Variantenmodell ergänzen
+- [ ] Scheduler mit gehosteter Instanz und echten Zugangsdaten end-to-end prüfen
+- [ ] Variantenmodell ergänzen
 - [ ] Deployment-Ziel auswählen und einrichten
 
 ## Phase 2 – Erstes nutzbares Produkt

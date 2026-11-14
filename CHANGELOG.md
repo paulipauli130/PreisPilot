@@ -8,6 +8,8 @@ Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1
 
 ### Hinzugefügt
 
+- Geschützten Hintergrund-Endpunkt für veraltete Preisbeobachtungen und stündlichen GitHub-Actions-Workflow ergänzt; pro Abruf werden höchstens zehn Produkte sequenziell verarbeitet.
+- Gemeinsame eBay-Aktualisierungslogik aus der Einzelprodukt-API ausgelagert und vom Hintergrundabruf wiederverwendet.
 - Marke von PreisPilot zu Sparwache umgestellt: Dashboard, Logo, README, Projektdokumentation, Paketkennung und lokale Datenbankdatei aktualisiert; vorhandene Browser-Einstellungen werden migriert.
 - eBay-Browse-API-Adapter mit OAuth, Angebotsvergleich, gespeicherten Händlerangeboten und manuellem sowie stündlichem Abruf (benötigt eBay-Produktionsfreigabe und Zugangsdaten).
 - Statusanzeige für eBay-Zugang, Fehlerstatus pro Produkt und optionales Produktnamensfeld für bessere Suchtreffer.
